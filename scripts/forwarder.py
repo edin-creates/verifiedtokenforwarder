@@ -20,6 +20,8 @@ import sqlite3
 import pymongo
 from pymongo import MongoClient, IndexModel, ASCENDING
 import json
+from telethon.extensions import markdown
+from telethon import types
 
 MAX_RETRIES = 3
 MIN_DELAY = 0.3
@@ -53,6 +55,27 @@ target_burn = int(os.environ['TARGET_CHANNEL_BURN'])
 mongodbusername = os.environ['mongodbUsername']
 mongodbpassword = os.environ['mongodbPassword']
 
+
+#custom markdown to use custom telgram emojis with telethon
+class CustomMarkdown:
+    @staticmethod
+    def parse(text):
+        text, entities = markdown.parse(text)
+        for i, e in enumerate(entities):
+            if isinstance(e, types.MessageEntityTextUrl):
+                if e.url == 'spoiler':
+                    entities[i] = types.MessageEntitySpoiler(e.offset, e.length)
+                elif e.url.startswith('emoji/'):
+                    entities[i] = types.MessageEntityCustomEmoji(e.offset, e.length, int(e.url.split('/')[1]))
+        return text, entities
+    @staticmethod
+    def unparse(text, entities):
+        for i, e in enumerate(entities or []):
+            if isinstance(e, types.MessageEntityCustomEmoji):
+                entities[i] = types.MessageEntityTextUrl(e.offset, e.length, f'emoji/{e.document_id}')
+            if isinstance(e, types.MessageEntitySpoiler):
+                entities[i] = types.MessageEntityTextUrl(e.offset, e.length, 'spoiler')
+        return markdown.unparse(text, entities)
 
 # MongoDb database manager class that handles connections to the tokens database
 class DatabaseManager:
@@ -185,7 +208,7 @@ def treatment_message_text(message_text, tokens):
             mcap, liquidity = None, None
             cexfunded = None
             telegram_links, twitter_links, discord_links, other_websites, medium_links, triple_links, social_media_text = None, None, None, None, None, None, None
-
+            tx_lpremove, number_lpremove = None,  None
             # Wait for all tasks to complete
             for future in concurrent.futures.as_completed([task1_future, task2_future, task3_future, task4_future, task5_future]):
                 try:
@@ -228,32 +251,32 @@ def treatment_message_text(message_text, tokens):
         message_text = re.sub(pattern, "", message_text, flags=re.IGNORECASE)
         ##############################################################
         
-        message_text += f"\n\n---------------------------------\n** ⟹💲 Marketcap:**  `{mcap}`\n** ⟹💧 Liquidity:**  `{liquidity}`\n"
+        message_text += f"\n\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[▶️](emoji/5816812219156927426) **💲 Marketcap:**  `{mcap}`\n[▶️](emoji/5816812219156927426) **💧 Liquidity:**  `{liquidity}`\n"
 
         if social_media_text.strip(): 
-            message_text += f"\n---------------------------------\n 🌐 **SOCAL LINKS** 🌐  \n ⯆\n{social_media_text}"
+            message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n 🌐 **SOCAL LINKS** 🌐  \n ⯆\n{social_media_text}"
         ##############################################################
 
-        message_text +=f"\n---------------------------------\n**📈DEPLOYER DETAILS:**\n ⯆\n"
+        message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n**📈DEPLOYER DETAILS:**\n ⯆\n"
         if deployer_name is not None:
-            message_text += f"**  ⟹⚡️ Nametag:**  `{deployer_name}`\n"
+            message_text += f"[▶️](emoji/5816812219156927426) ** ⚡️ Nametag:**  `{deployer_name}`\n"
         
         if len(cexfunded)>0 :
-            message_text += f"**  ⟹🔹 Cex:** `{cexfunded}`\n"
+            message_text += f"[▶️](emoji/5816812219156927426) ** 🔹 Cex:** `{cexfunded}`\n"
 
         if balance_eth is not None:
-            message_text += f"**  ⟹💰 Balance:**  `{round_balance_eth}` **ETH**\n**  ⟹🕰 Age:**  `{deployer_age}` **days**\n"
+            message_text += f"[▶️](emoji/5816812219156927426) ** 💰 Balance:**  `{round_balance_eth}` **ETH**\n[▶️](emoji/5816812219156927426) ** 🕰 Age:**  `{deployer_age}` **days**\n"
         else:
-            message_text += f"**  ⟹💰 Balance:**  `{balance_eth}` **ETH**\n**  ⟹🕰 Age:**  `{deployer_age}` **days**\n"
+            message_text += f"[▶️](emoji/5816812219156927426)** 💰 Balance:**  `{balance_eth}` **ETH**\n[▶️](emoji/5816812219156927426) ** 🕰 Age:**  `{deployer_age}` **days**\n"
         
         if number_lpremove is not None:
             if number_lpremove > 0 :
-                message_text += f"**  ⟹🛑 liq remove Txs** : `{number_lpremove}` \n     **⟹** `{tx_lpremove}` \n"
+                message_text += f"[▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) `{tx_lpremove}` \n"
 
         if int(pastcoins[1]) != 0:
-            message_text += f"\n---------------------------------\n **🤖 BEST PAST COIN**`(out of {contracts_deployed_count})`\n ⯆\n **  ⟹ Name:** `{past_name}` \n **  ⟹ Symbol:** `{past_symbol}` \n **  ⟹ Ca:** `{pastcoins[0]}` \n **  ⟹🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
+            message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN**`(out of {contracts_deployed_count})`\n ⯆\n [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n [▶️](emoji/5816812219156927426) **🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
         elif int(pastcoins[2]) > 0: #checks if no ath mcap data is available but there is a high tx past coin
-                        message_text += f"\n---------------------------------\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n ⯆\n **  ⟹ Name:** `{past_name}` \n **  ⟹ Symbol:** `{past_symbol}` \n **  ⟹ Ca:** `{pastcoins[0]}` \n "
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n ⯆\n [▶️](emoji/5816812219156927426) ** Name:** `{past_name}` \n [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n "
 
         return message_text, contract_address
 
@@ -261,14 +284,14 @@ def treatment_message_text(message_text, tokens):
 
 #Main
 async def main():
-    async with TelegramClient("ubuntusession", api_id, api_hash) as client:
+    async with TelegramClient("ubuntusession1", api_id, api_hash) as client:
         @client.on(events.NewMessage(chats=source_channel))
         async def my_event_handler(event):
             start = time.time()
             message = event.message
             message_text = message.text
             logger.info(f"message text: {message_text}")
-
+            client.parse_mode = CustomMarkdown()
             #freshly deployed tokens #####################################################################################
             if "Deployed" in message_text and "🛑" not in message_text:
                 logger.info("Found a verified contract message")
@@ -299,7 +322,7 @@ async def main():
                     deployer_name = ethsourcecode.get_address_nametag(deployer_address, proxy)
                     #mcap, liquidity = ethsourcecode.get_marketcap(contract_address)
                     cexfunded = ethsourcecode.extract_nametags_and_addresses(deployer_address, proxy)
-                    number_lpremove, txs_lpremove = ethsourcecode.detect_liquidity_removals(deployer_address, f"{ETHERSCAN_API_KEY3}", None, None)
+                    number_lpremove, tx_lpremove = ethsourcecode.detect_liquidity_removals(deployer_address, f"{ETHERSCAN_API_KEY3}", None, None)
                     
                     #get the pastcoins if there is anything interesting
                     pastcoins = ethsourcecode.fpc(contract_address, f"{ETHERSCAN_API_KEY}", None, None)
@@ -333,32 +356,32 @@ async def main():
                     #message_text += f"---------------------------------\n** ⟹💲 Marketcap:**  `{mcap}`\n** ⟹💰 Liquidity:**  `{liquidity}`\n"
 
                     if social_media_text.strip(): 
-                        message_text += f"\n---------------------------------\n 🌐 **SOCAL LINKS** 🌐  \n ⯆\n{social_media_text}"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n 🌐 **SOCAL LINKS** 🌐  \n ⯆\n{social_media_text}"
                     ##############################################################
 
-                    message_text +=f"\n---------------------------------\n**📈DEPLOYER DETAILS:**\n ⯆\n"
+                    message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n**📈DEPLOYER DETAILS:**\n ⯆\n"
                     if deployer_name is not None:
-                        message_text += f"**  ⟹⚡️ Nametag:**  `{deployer_name}`\n"
+                        message_text += f"[▶️](emoji/5816812219156927426) ** ⚡️ Nametag:**  `{deployer_name}`\n"
                     
                     if len(cexfunded)>0 :
-                        message_text += f"**  ⟹🔹 Cex:** `{cexfunded}`\n"
+                        message_text += f"[▶️](emoji/5816812219156927426) ** 🔹 Cex:** `{cexfunded}`\n"
                     if balance_eth is not None:
-                        message_text += f"**  ⟹💰 Balance:**  `{round_balance_eth}` **ETH**\n**  ⟹🕰 Age:**  `{deployer_age}` **days**\n"
+                        message_text += f"[▶️](emoji/5816812219156927426) **💰 Balance:**  `{round_balance_eth}` **ETH**\n [▶️](emoji/5816812219156927426)**  🕰 Age:**  `{deployer_age}` **days**\n"
                     else:
-                        message_text += f"**  ⟹💰 Balance:**  `{balance_eth}` **ETH**\n**  ⟹🕰 Age:**  `{deployer_age}` **days**\n"
+                        message_text += f"[▶️](emoji/5816812219156927426) **💰 Balance:**  `{balance_eth}` **ETH**\n[▶️](emoji/5816812219156927426) ** 🕰 Age:**  `{deployer_age}` **days**\n"
 
 
                     if number_lpremove is not None:
                         if number_lpremove > 0 :
-                            message_text += f"**  ⟹🛑 liq remove Txs** : `{number_lpremove}` \n     **⟹** `{tx_lpremove}` \n"
+                            message_text += f"[▶️](emoji/5816812219156927426) **  🛑 liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) `{tx_lpremove}` \n"
                     
                     if pastcoins[1] != 0: #checks if one ath Mcap past ca at least exists
-                        message_text += f"\n---------------------------------\n **🤖 BEST PAST COIN `(out of {contracts_deployed_count})`**\n ⯆\n **  ⟹ Name:** `{past_name}` \n **  ⟹ Symbol:** `{past_symbol}` \n **  ⟹ Ca:** `{pastcoins[0]}` \n **  ⟹🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n ⯆\n   [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n [▶️](emoji/5816812219156927426)** 🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
                     elif int(pastcoins[2]) > 0: #checks if no ath mcap data is available but there is a high tx past coin
-                        message_text += f"\n---------------------------------\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n ⯆\n **  ⟹ Name:** `{past_name}` \n **  ⟹ Symbol:** `{past_symbol}` \n **  ⟹ Ca:** `{pastcoins[0]}` \n "
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n ⯆\n [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n "
                     
                     # Send the message and capture the returned Message object
-                    sent_message = await client.send_message(target_deployed, message_text, parse_mode='md', link_preview=False)
+                    sent_message = await client.send_message(target_deployed, message_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                     # Now, you can access the message ID using sent_message.id
                     message_id = sent_message.id
@@ -546,31 +569,31 @@ async def main():
                     
                     ##############################################################
                     
-                    message_text += f"\n---------------------------------\n** ⟹💲 Marketcap:**  `{mcap}`\n** ⟹💧 Liquidity:**  `{liquidity}`\n"
+                    message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [▶️](emoji/5816812219156927426) **💲 Marketcap:**  `{mcap}`\n [▶️](emoji/5816812219156927426) **💧 Liquidity:**  `{liquidity}`\n"
 
                     if social_media_text.strip(): 
-                        message_text += f"\n---------------------------------\n 🌐 **SOCAL LINKS** 🌐  \n ⯆\n{social_media_text}"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n 🌐 **SOCAL LINKS** 🌐  \n ⯆\n{social_media_text}"
                     ##############################################################
 
-                    message_text +=f"\n---------------------------------\n**📈DEPLOYER DETAILS:**\n ⯆\n"
+                    message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n**📈DEPLOYER DETAILS:**\n ⯆\n"
                     if deployer_name is not None:
-                        message_text += f"**  ⟹⚡️ Nametag:**  `{deployer_name}`\n"
+                        message_text += f"[▶️](emoji/5816812219156927426) **⚡️ Nametag:**  `{deployer_name}`\n"
                     
                     if len(cexfunded)>0 :
-                        message_text += f"**  ⟹🔹 Cex:** `{cexfunded}`\n"
+                        message_text += f"[▶️](emoji/5816812219156927426) ** 🔹 Cex:** `{cexfunded}`\n"
 
                     if balance_eth is not None:
-                        message_text += f"**  ⟹💰 Balance:**  `{round_balance_eth}` **ETH**\n**  ⟹🕰 Age:**  `{deployer_age}` **days**\n"
+                        message_text += f" [▶️](emoji/5816812219156927426)** 💰 Balance:**  `{round_balance_eth}` **ETH**\n [▶️](emoji/5816812219156927426)**  🕰 Age:**  `{deployer_age}` **days**\n"
                     else:
-                        message_text += f"**  ⟹💰 Balance:**  `{balance_eth}` **ETH**\n**  ⟹🕰 Age:**  `{deployer_age}` **days**\n"
+                        message_text += f"[▶️](emoji/5816812219156927426) ** 💰 Balance:**  `{balance_eth}` **ETH**\n [▶️](emoji/5816812219156927426)** 🕰 Age:**  `{deployer_age}` **days**\n"
 
                     if number_lpremove is not None and number_lpremove>0 :
-                        message_text += f"**  ⟹🛑 liq remove Txs** : `{number_lpremove}` \n     **⯆** `{tx_lpremove}` \n"
+                        message_text += f"[▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n     **⯆** `{tx_lpremove}` \n"
                     
                     if pastcoins[1] != 0:
-                        message_text += f"\n---------------------------------\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n ⯆\n **  ⟹ Name:** `{past_name}` \n **  ⟹ Symbol:** `{past_symbol}` \n **  ⟹ Ca:** `{pastcoins[0]}` \n **  ⟹🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n ⯆\n [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n [▶️](emoji/5816812219156927426)**  Symbol:** `{past_symbol}` \n [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n [▶️](emoji/5816812219156927426)** 🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
                     elif int(pastcoins[2]) > 0:
-                        message_text += f"\n---------------------------------\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n ⯆\n **  ⟹ Name:** `{past_name}` \n **  ⟹ Symbol:** `{past_symbol}` \n **  ⟹ Ca:** `{pastcoins[0]}` \n "
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n ⯆\n [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n [▶️](emoji/5816812219156927426)** Symbol:** `{past_symbol}` \n [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n "
 
                     if hopanalysis is not None:
                         if hopanalysis != "":
@@ -578,7 +601,7 @@ async def main():
 
                     
 
-                    sent_message = await client.send_message(target_verified, message_text, parse_mode='md', link_preview=False)
+                    sent_message = await client.send_message(target_verified, message_text, parse_mode=CustomMarkdown(), link_preview=False)
                     print(f"\n telegram verified forwarder finished in: {round(time.time() - start, 2)} seconds \n")
 
                     # Now, you can access the message ID using sent_message.id
@@ -622,7 +645,7 @@ async def main():
                 
                 message_text, contract_address = treatment_message_text(message_text, tokens)    
 
-                sent_message = await client.send_message(target_burn, message_text, parse_mode='md', link_preview=False)
+                sent_message = await client.send_message(target_burn, message_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                 # Now, you can access the message ID using sent_message.id
                 message_id = sent_message.id
@@ -657,7 +680,7 @@ async def main():
                 
                     message_text, contract_address = treatment_message_text(message_text, tokens)
 
-                    sent_message = await client.send_message(target_longlock, message_text, parse_mode='md', link_preview=False)
+                    sent_message = await client.send_message(target_longlock, message_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                     # Now, you can access the message ID using sent_message.id
                     message_id = sent_message.id
