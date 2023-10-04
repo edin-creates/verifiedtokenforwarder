@@ -86,7 +86,7 @@ PROXY10 = os.environ['PROXY10']
 
 api_id = os.environ['API_ID']
 api_hash = os.environ['API_HASH']
-bot_token = os.environ['BOT_TOKEN']
+#bot_token = os.environ['BOT_TOKEN']
 source_channel = int(os.environ['SOURCE_CHANNEL'])
 target_verified = int(os.environ['TARGET_CHANNEL_VERIFIED'])
 target_deployed = int(os.environ['TARGET_CHANNEL_DEPLOYED'])
@@ -169,7 +169,7 @@ tokens = database_manager.tokens
 
 #Main
 async def main():
-    async with TelegramClient("hopanalysis", api_id, api_hash) as clientTG:
+    async with TelegramClient("hopanalysis2", api_id, api_hash) as clientTG:
         @clientTG.on(events.NewMessage(chats=target_deployed))
         async def my_event_handler(event):
             start = time.time()
