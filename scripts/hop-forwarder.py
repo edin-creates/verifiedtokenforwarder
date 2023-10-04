@@ -173,6 +173,7 @@ async def main():
         @clientTG.on(events.NewMessage(chats=target_deployed))
         async def my_event_handler(event):
             start = time.time()
+            clientTG.parse_mode = CustomMarkdown()
             message = event.message
             message_text = message.text
             logger.info(f"message text: {message_text}")
@@ -325,25 +326,25 @@ async def main():
                             if hop_message != "":
                                 # Edit the message in the target channel with new content
                                 new_text = deployed_message + hop_message
-                                await clientTG.edit_message(target_deployed, deployed_message_id, new_text, parse_mode=CustomMarkdown())
+                                await clientTG.edit_message(target_deployed, deployed_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                         if verified_message_id is not None:
                             if hop_message != "":
                                 # Edit the message in the target channel with new content
                                 new_text = verified_message + hop_message
-                                await clientTG.edit_message(target_verified, verified_message_id, new_text, parse_mode=CustomMarkdown())
+                                await clientTG.edit_message(target_verified, verified_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                         if lock_message_id is not None:
                             if hop_message != "":
                                 # Edit the message in the target channel with new content
                                 new_text = lock_message + hop_message
-                                await clientTG.edit_message(target_longlock, lock_message_id, new_text, parse_mode=CustomMarkdown())
+                                await clientTG.edit_message(target_longlock, lock_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                         if burn_message_id is not None:
                             if hop_message != "":
                                 # Edit the message in the target channel with new content
                                 new_text = burn_message + hop_message
-                                await clientTG.edit_message(target_burn, burn_message_id, new_text, parse_mode=CustomMarkdown())
+                                await clientTG.edit_message(target_burn, burn_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                     print(f"\n telegram deployed forwarder finished in: {round(time.time() - start, 2)} seconds \n")
 

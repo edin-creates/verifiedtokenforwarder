@@ -405,7 +405,7 @@ async def handle_message(event):
                     total_calls = len(channels_events)
                     
                     # Edit the message in the target channel with new content
-                    channels_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n**🔊Called **`{total_calls} times`  **by** `{num_distinct_channels} Channels`**:**\n ⯆\n "
+                    channels_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n**🔊Called **`{total_calls} times`  **by** `{num_distinct_channels} Channels`**:**\n [🔽](emoji/5820990556616004290)\n"
                     print(f"Called by {num_distinct_channels} call channels")
                     print(f"Total number of calls: {total_calls}")
                     
@@ -419,10 +419,10 @@ async def handle_message(event):
                             print(f'\n\n channel mcap: [💲](emoji/5816854146627671089){channel_marketcap} \n\n')
                             #edge case in case mcarketcap is empty
                             if channel_marketcap is None:
-                                channels_text += f"**  [▶️](emoji/5816812219156927426)** @{channel_name}  **|**  __{timestamp}__\n"
+                                channels_text += f"**  [▶️](emoji/5816812219156927426)** @{channel_name}  [▶️](emoji/5827885422235095225)  __{timestamp}__\n"
                             else:
                                 smart_mc =ethsourcecode.smart_format_number(channel_marketcap)
-                                channels_text += f"**  [▶️](emoji/5816812219156927426) @{channel_name}  |  [💲](emoji/5816854146627671089)Mc:** {smart_mc}  **|**  __{timestamp}__\n"
+                                channels_text += f"**  [▶️](emoji/5816812219156927426) @{channel_name}  [▶️](emoji/5827885422235095225)  [💲](emoji/5816854146627671089)Mc:** {smart_mc}  [▶️](emoji/5827885422235095225)  __{timestamp}__\n"
 
                             print(f"\nChannel Name: {channel_name}")
                             print(f"Timestamp: {timestamp}")
@@ -457,7 +457,7 @@ async def handle_message(event):
                     
                         # Edit the message in the target channel with new content
                         new_text = deployed_message + channels_text
-                        #f"\n---------------------------------\n**🔊Called By:**\n ⯆\n**  ⟹{chat_id_to_name[actual_chat_id]}** at {timestamp_utc} "
+                        #f"\n---------------------------------\n**🔊Called By:**\n [🔽](emoji/5820990556616004290)\n**  ⟹{chat_id_to_name[actual_chat_id]}** at {timestamp_utc} "
                         print("deployed message edit...")
                         edit_tasks.append(clientTG.edit_message(target_deployed, deployed_message_id, new_text, parse_mode=CustomMarkdown(),link_preview=False))
 
@@ -541,7 +541,6 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-
 
 
 
