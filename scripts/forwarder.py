@@ -251,6 +251,22 @@ def treatment_message_text(message_text, tokens):
         pattern = r"🔗 (\[TG\]\(.*?\)? 🤷‍♂️|\[TG\]\(.*?\)?|TG 🤷‍♂️)? \| (Web 🤷‍♂️|\[Web\]\(.*?\)? 🤷‍♂️|\[Web\]\(.*?\)?|Web)? \| (Twitter 🤷‍♂️|\[Twitter\]\(.*?\)? 🤷‍♂️|\[Twitter\]\(.*?\)?|Twitter)? \|"       
         # Use the re.sub() function to remove all matches of the pattern from the text
         message_text = re.sub(pattern, "", message_text, flags=re.IGNORECASE)
+
+        # Add an emoji before "CA:" and "Suplly"
+        message_text = message_text.replace("CA:", "[✍️](emoji/5816736498883498308) CA:")
+        message_text = message_text.replace("**Supply:**", "[🛢](emoji/5814449390143671921) **Supply**")
+
+        # Replace the "📊" emoji with another emoji, for example "🔍"
+        message_text = message_text.replace("📊", "[📈](emoji/5823476741384967483)")
+        message_text = message_text.replace("🔗" , "[🔗](emoji/5828154325842530820)")
+
+        # Remove the "| KibaSwap (https://indy.kibadex.com/...)" pattern
+        message_text = re.sub(r'\|\s*\[KibaSwap\]\(https://indy\.kibadex\.com/.*?\) 🔄', '', message_text)
+
+        # Remove the "| DexV (https://www.dexview.com/...)" pattern
+        message_text = re.sub(r'\|\s*\[DexV\]\(https://www\.dexview\.com/eth/.*?\)', '', message_text)
+        # Replace "|" with an emoji, for example "[▶️](emoji/5827976810549219414)"
+        message_text = message_text.replace("|", "[▶️](emoji/5827885422235095225)")
         ##############################################################
         
         message_text += f"\n\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[▶️](emoji/5816812219156927426)  [📈](emoji/5823242158861193696) **Marketcap:**  `{mcap}`\n[▶️](emoji/5816812219156927426) [💧](emoji/5823394089034322747) **Liquidity:**  `{liquidity}`\n"
@@ -267,7 +283,7 @@ def treatment_message_text(message_text, tokens):
             message_text += f"  [▶️](emoji/5816812219156927426) [🔹](emoji/5816477795823392378) **Cex:** `{cexfunded}`\n"
 
         if balance_eth is not None:
-            message_text += f"  [▶️](emoji/5816812219156927426)  [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n[▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
+            message_text += f"  [▶️](emoji/5816812219156927426)  [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
         else:
             message_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
         
@@ -359,7 +375,7 @@ async def main():
                     message_text = message_text.replace("**Supply:**", "[🛢](emoji/5814449390143671921) **Supply**")
 
                     # Replace the "📊" emoji with another emoji, for example "🔍"
-                    memessage_text = message_text.replace("📊", "[📈](emoji/5823476741384967483)")
+                    message_text = message_text.replace("📊", "[📈](emoji/5823476741384967483)")
                     message_text = message_text.replace("🔗" , "[🔗](emoji/5828154325842530820)")
 
                     # Remove the "| KibaSwap (https://indy.kibadex.com/...)" pattern
@@ -586,6 +602,21 @@ async def main():
                     # Use the re.sub() function to remove all matches of the pattern from the text
                     message_text = re.sub(pattern, "", message_text, flags=re.IGNORECASE)
 
+                    # Add an emoji before "CA:" and "Suplly"
+                    message_text = message_text.replace("CA:", "[✍️](emoji/5816736498883498308) CA:")
+                    message_text = message_text.replace("**Supply:**", "[🛢](emoji/5814449390143671921) **Supply**")
+
+                    # Replace the "📊" emoji with another emoji, for example "🔍"
+                    message_text = message_text.replace("📊", "[📈](emoji/5823476741384967483)")
+                    message_text = message_text.replace("🔗" , "[🔗](emoji/5828154325842530820)")
+
+                    # Remove the "| KibaSwap (https://indy.kibadex.com/...)" pattern
+                    message_text = re.sub(r'\|\s*\[KibaSwap\]\(https://indy\.kibadex\.com/.*?\) 🔄', '', message_text)
+
+                    # Remove the "| DexV (https://www.dexview.com/...)" pattern
+                    message_text = re.sub(r'\|\s*\[DexV\]\(https://www\.dexview\.com/eth/.*?\)', '', message_text)
+                    # Replace "|" with an emoji, for example "[▶️](emoji/5827976810549219414)"
+                    message_text = message_text.replace("|", "[▶️](emoji/5827885422235095225)")
 
                     
                     ##############################################################
@@ -611,7 +642,7 @@ async def main():
                     if number_lpremove is not None and number_lpremove>0 :
                         formatted_lpremove_addresses = [f"`{address}`" for address in tx_lpremove]
                         result_lpremove = ', '.join(formatted_lpremove_addresses)
-                        message_text += f"  [▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n       [🔽](emoji/5820990556616004290)`resultx_lpremove} \n"
+                        message_text += f"  [▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n       [🔽](emoji/5820990556616004290) {result_lpremove} \n"
                     
                     if pastcoins[1] != 0:
                         message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426)**  Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308) **Ca:** `{pastcoins[0]}` \n  [▶️](emoji/5816812219156927426)** 🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
