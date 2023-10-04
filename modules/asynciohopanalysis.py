@@ -448,24 +448,24 @@ def generate_summary_text(oldest_wallet_per_hop, richest_wallet_per_hop, winning
             max_mcap_wallet = max(winning_data_per_hop, key=lambda x: x['max_mcap'])
             for tx in max_mcap_wallet['tx_path']:
                 tx = shorten_and_link(tx)
-            main_text += f"\n at hop {max_mcap_wallet['hop']} from `{asyncioethsourcecode.get_name_symbol(max_mcap_wallet['address'])}` , **ATH MC:** `{asyncioethsourcecode.smart_format_number(max_mcap_wallet['max_mcap'])}`,  ca: `{max_mcap_wallet['address']}`. Transaction path: {', '.join(shorten_and_link(max_mcap_wallet['tx_path']))}\n"
+            main_text += f"\n[🏃](emoji/5814422056971800714) at hop {max_mcap_wallet['hop']} from `{asyncioethsourcecode.get_name_symbol(max_mcap_wallet['address'])}` , **ATH MC:** `{asyncioethsourcecode.smart_format_number(max_mcap_wallet['max_mcap'])}`,  [✍️](emoji/5816736498883498308) ca: `{max_mcap_wallet['address']}`. Transaction path: {', '.join(shorten_and_link(max_mcap_wallet['tx_path']))}\n"
 
         # Oldest wallet available
         if oldest_wallet_per_hop:
             oldest_wallet = max(oldest_wallet_per_hop, key=lambda x: x['age'])
-            main_text += f"** ⟹**The oldest connected wallet is `{oldest_wallet['age']}` **days** old at hop `{oldest_wallet['hop']}`, address: {shorten_and_link(oldest_wallet['address'])} .\n"
+            main_text += f"  [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) The oldest connected wallet is `{oldest_wallet['age']}` **days** old at hop `{oldest_wallet['hop']}`, [✍️](emoji/5816736498883498308) address: {shorten_and_link(oldest_wallet['address'])} .\n"
 
         # Richest wallet available
         if richest_wallet_per_hop:
             richest_wallet = max(richest_wallet_per_hop, key=lambda x: x['balance'])
-            main_text += f"** ⟹**The richest connected wallet has {round(richest_wallet['balance'],2)} ETH, is at hop {richest_wallet['hop']}, address: {shorten_and_link(richest_wallet['address'])} \n"
+            main_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) The richest connected wallet has {round(richest_wallet['balance'],2)} ETH, is at hop {richest_wallet['hop']}, [✍️](emoji/5816736498883498308) address: {shorten_and_link(richest_wallet['address'])} \n"
         
         # Total liq removals number
         if total_liq_removals > 0:
-            main_text += f"** ⟹**🛑 Total liquidity removals: {total_liq_removals}\n"
+            main_text += f"  [▶️](emoji/5816812219156927426) 🛑 Total liquidity removals: {total_liq_removals}\n"
 
         if total_liq_removals > 0 or richest_wallet_per_hop or oldest_wallet_per_hop or winning_data_per_hop:
-            main_text = f"\n---------------------------------\n**📈HOP ANALYSIS:**\n ⯆\n" + main_text
+            main_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🏃](emoji/5814422056971800714) **HOP ANALYSIS:**\n [🔽](emoji/5820990556616004290)\n" + main_text
 
         ########## Details Text
         max_hops = len(tx_count_per_hop)
@@ -476,26 +476,26 @@ def generate_summary_text(oldest_wallet_per_hop, richest_wallet_per_hop, winning
             hop_winning_data = [data for data in winning_data_per_hop if data['hop'] == hop]
             if hop_winning_data:
                 max_mcap_wallet_hop = max(hop_winning_data, key=lambda x: x['max_mcap'])
-                current_hop_details.append(f"** ⟹**{asyncioethsourcecode.get_name_symbol(max_mcap_wallet_hop['address'])}, ATH MC: {asyncioethsourcecode.smart_format_number(max_mcap_wallet_hop['max_mcap'])}, CA: {shorten_and_link(max_mcap_wallet_hop['address'])}.")
+                current_hop_details.append(f"  [▶️](emoji/5816812219156927426) {asyncioethsourcecode.get_name_symbol(max_mcap_wallet_hop['address'])}, ATH MC: {asyncioethsourcecode.smart_format_number(max_mcap_wallet_hop['max_mcap'])}, [✍️](emoji/5816736498883498308) CA: {shorten_and_link(max_mcap_wallet_hop['address'])}.")
 
             # Oldest address for current hop
             hop_oldest_wallet = [data for data in oldest_wallet_per_hop if data['hop'] == hop]
             if hop_oldest_wallet:
                 oldest_wallet_hop = max(hop_oldest_wallet, key=lambda x: x['age'])
-                current_hop_details.append(f"** ⟹**Oldest address is {shorten_and_link(oldest_wallet_hop['address'])} with age `{oldest_wallet_hop['age']}` **days**.")
+                current_hop_details.append(f"  [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) Oldest address is {shorten_and_link(oldest_wallet_hop['address'])} with age `{oldest_wallet_hop['age']}` **days**.")
 
             # Richest wallet for current hop
             hop_richest_wallet = [data for data in richest_wallet_per_hop if data['hop'] == hop]
             if hop_richest_wallet:
                 richest_wallet_hop = max(hop_richest_wallet, key=lambda x: x['balance'])
-                current_hop_details.append(f"** ⟹**Richest wallet is {shorten_and_link(richest_wallet_hop['address'])} with a balance `{round(richest_wallet_hop['balance'],2)}` **ETH**.")
+                current_hop_details.append(f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) Richest wallet is {shorten_and_link(richest_wallet_hop['address'])} with a balance `{round(richest_wallet_hop['balance'],2)}` **ETH**.")
 
             # Number of liquidity removals for current hop
             hop_liq_removal_data = [data for data in liq_removal_data_per_hop if data['hop'] == hop]
             if hop_liq_removal_data:
                 total_removals_hop = sum(item['liquidity_removals'] for item in hop_liq_removal_data)
                 if total_removals_hop > 0:
-                    current_hop_details.append(f"** ⟹**Liquidity removals: `{total_removals_hop}`.")
+                    current_hop_details.append(f"  [▶️](emoji/5816812219156927426) Liquidity removals: `{total_removals_hop}`.")
 
             # Only add the hop details if there's relevant data
             if current_hop_details:
