@@ -13,6 +13,8 @@ from modules import ethsourcecode, caextractor
 from scripts import forwarder
 from modules import asynciohopanalysis
 from telethon import TelegramClient, events
+from telethon.extensions import markdown
+from telethon import types
 import asyncio
 from aiolimiter import AsyncLimiter
 import web3
@@ -98,6 +100,26 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logging.getLogger('httpx').setLevel(logging.WARNING)
 
+#custom markdown to use custom telgram emojis with telethon
+class CustomMarkdown:
+    @staticmethod
+    def parse(text):
+        text, entities = markdown.parse(text)
+        for i, e in enumerate(entities):
+            if isinstance(e, types.MessageEntityTextUrl):
+                if e.url == 'spoiler':
+                    entities[i] = types.MessageEntitySpoiler(e.offset, e.length)
+                elif e.url.startswith('emoji/'):
+                    entities[i] = types.MessageEntityCustomEmoji(e.offset, e.length, int(e.url.split('/')[1]))
+        return text, entities
+    @staticmethod
+    def unparse(text, entities):
+        for i, e in enumerate(entities or []):
+            if isinstance(e, types.MessageEntityCustomEmoji):
+                entities[i] = types.MessageEntityTextUrl(e.offset, e.length, f'emoji/{e.document_id}')
+            if isinstance(e, types.MessageEntitySpoiler):
+                entities[i] = types.MessageEntityTextUrl(e.offset, e.length, 'spoiler')
+        return markdown.unparse(text, entities)
 
 # MongoDb database manager class that handles connections to the tokens database
 class DatabaseManager:
@@ -303,25 +325,25 @@ async def main():
                             if hop_message != "":
                                 # Edit the message in the target channel with new content
                                 new_text = deployed_message + hop_message
-                                await clientTG.edit_message(target_deployed, deployed_message_id, new_text, parse_mode='md')
+                                await clientTG.edit_message(target_deployed, deployed_message_id, new_text, parse_mode=CustomMarkdown())
 
                         if verified_message_id is not None:
                             if hop_message != "":
                                 # Edit the message in the target channel with new content
                                 new_text = verified_message + hop_message
-                                await clientTG.edit_message(target_verified, verified_message_id, new_text, parse_mode='md')
+                                await clientTG.edit_message(target_verified, verified_message_id, new_text, parse_mode=CustomMarkdown())
 
                         if lock_message_id is not None:
                             if hop_message != "":
                                 # Edit the message in the target channel with new content
                                 new_text = lock_message + hop_message
-                                await clientTG.edit_message(target_longlock, lock_message_id, new_text, parse_mode='md')
+                                await clientTG.edit_message(target_longlock, lock_message_id, new_text, parse_mode=CustomMarkdown())
 
                         if burn_message_id is not None:
                             if hop_message != "":
                                 # Edit the message in the target channel with new content
                                 new_text = burn_message + hop_message
-                                await clientTG.edit_message(target_burn, burn_message_id, new_text, parse_mode='md')
+                                await clientTG.edit_message(target_burn, burn_message_id, new_text, parse_mode=CustomMarkdown())
 
                     print(f"\n telegram deployed forwarder finished in: {round(time.time() - start, 2)} seconds \n")
 
