@@ -110,6 +110,53 @@ def preprocess_text(text):
     else:
         return text.replace('\\n', '\n').replace('\\r', '\r')
 
+
+#the reverse of the smart_format_number function
+def smart_parse_number(formatted_number):
+    """
+    Convert a formatted number string back to a number.
+    Converts numbers below a certain threshold to 0.
+    
+    :param formatted_number: The formatted number string.
+    :return: The number.
+    """
+
+    threshold = 0.0001  # Set the threshold
+
+    # Handle the case when the formatted_number is already a number
+    try:
+        number = float(formatted_number)
+        # If the number is below the threshold, return 0
+        if abs(number) < threshold:
+            return 0
+        return number
+    except ValueError:
+        # Continue if it's not a simple float number
+        pass
+
+    # Mapping of suffix to the multiplier
+    suffix_to_multiplier = {
+        "K": 1000,
+        "M": 1000000,
+        "B": 1000000000
+    }
+
+    # Extract the numeric part and the suffix
+    numeric_part, suffix = formatted_number[:-1], formatted_number[-1].upper()
+
+    # Check the suffix and multiply the numeric part with the corresponding multiplier
+    multiplier = suffix_to_multiplier.get(suffix)
+    if multiplier is None:
+        raise ValueError(f"Invalid formatted number: {formatted_number}")
+
+    result = float(numeric_part) * multiplier
+
+    # Again check if the result is below the threshold
+    if abs(result) < threshold:
+        return 0
+
+    return result
+
 #function that retrives all the social media and organises it from a messy source code
 def get_socialmedia_filter(contract_address, api_key, proxy, header):
     
@@ -135,7 +182,7 @@ def get_socialmedia_filter(contract_address, api_key, proxy, header):
 
         urls = extractor.find_urls(text_with_spaces)
         blacklist = ['github.com', 'stackexchange.com', 'buyfee.marketing', 'sellfee.marketing','soliditylang.org','metamask.io','eth.wiki','github.io','ethers.io','www.smartcontracts.tools' ,'hardhat.org','msg.data','zeppelin.solutions', 'openzeppelin.com', 'readthedocs.io', 'ethereum.org', 'consensys.net', 'Etherscan.io', 'sellTaxes.dev', 'BscScan.com', 'wikipedia.org']
-        filtered_urls = set(url.lower() for url in urls if not any(black_domain in url for black_domain in blacklist))
+        filtered_urls = set(url for url in urls if not any(black_domain.lower() in url.lower() for black_domain in blacklist))
         
         
         twitter_links = [url for url in filtered_urls if 'twitter.com' in url or is_twitter_xcom(url)]
