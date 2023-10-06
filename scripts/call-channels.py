@@ -93,6 +93,7 @@ target_verified = int(os.environ['TARGET_CHANNEL_VERIFIED'])
 target_deployed = int(os.environ['TARGET_CHANNEL_DEPLOYED'])
 target_longlock = int(os.environ['TARGET_CHANNEL_LONGLOCKS'])
 target_burn = int(os.environ['TARGET_CHANNEL_BURN'])
+target_call = int(os.environ['TARGET_CHANNEL_CALL'])
 
 mongodbusername = os.environ['mongodbUsername']
 mongodbpassword = os.environ['mongodbPassword']
@@ -392,6 +393,7 @@ async def handle_message(event):
                 verified_event = token_data.get("events", {}).get("verified", {})
                 locked_event = token_data.get("events", {}).get("locked", {})
                 burned_event = token_data.get("events", {}).get("burned", {})
+                called_event = token_data.get("events", {}).get("called", {})
                 #extract token call channel events:
                 channels_events = token_data.get("channels", None)
                 channels_text = ""
@@ -405,7 +407,7 @@ async def handle_message(event):
                     total_calls = len(channels_events)
                     
                     # Edit the message in the target channel with new content
-                    channels_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🔊](emoji/5823192186916704073)**Called **`{total_calls} times`  **by** `{num_distinct_channels} Channels`**:**\n[🔽](emoji/5820990556616004290)\n"
+                    channels_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🔊](emoji/5823192186916704073)**Called **`{total_calls} times`  **by** `{num_distinct_channels} Channels`**:** \n[🔽](emoji/5820990556616004290)\n"
                     print(f"Called by {num_distinct_channels} call channels")
                     print(f"Total number of calls: {total_calls}")
                     
@@ -421,10 +423,10 @@ async def handle_message(event):
                             print(f'\n\n channel mcap: [💲](emoji/5816854146627671089){channel_marketcap} \n\n')
                             #edge case in case mcarketcap is empty
                             if channel_marketcap is None:
-                                channels_text += f"  [▶️](emoji/5816812219156927426) @{channel_name}  [▶️](emoji/5827885422235095225)  __{timestamp}__\n"
+                                channels_text += f"  [▶️](emoji/5816812219156927426) [@{channel_name}]({channel_url})  [▶️](emoji/5827885422235095225)  __{timestamp}__\n "
                             else:
                                 smart_mc =ethsourcecode.smart_format_number(channel_marketcap)
-                                channels_text += f"  [▶️](emoji/5816812219156927426) @{channel_name}  [▶️](emoji/5827885422235095225)  [💲](emoji/5816854146627671089)**Mc: {smart_mc}**  [▶️](emoji/5827885422235095225)  __{timestamp}__\n"
+                                channels_text += f"  [▶️](emoji/5816812219156927426) [@{channel_name}]({channel_url})  [▶️](emoji/5827885422235095225)  [💲](emoji/5816854146627671089)**Mc: {smart_mc}**  [▶️](emoji/5827885422235095225)  __{timestamp}__\n "
 
                             print(f"\nChannel Name: {channel_name}")
                             print(f"Timestamp: {timestamp}")
@@ -438,8 +440,11 @@ async def handle_message(event):
                             else:
                                 smart_mc =ethsourcecode.smart_format_number(channel_marketcap)
                                 channels_text += f" [@{channel_name}]({channel_url}) {smart_mc}, "
-
                 
+
+                #add the call event and post in the calls list telegram group or update if there is already a post
+
+
                 # Extract message_id and message_text from each event data
                 deployed_message_id = deployed_event.get("message_id", None)
                 deployed_message = deployed_event.get("message_text", None)
@@ -449,6 +454,9 @@ async def handle_message(event):
                 lock_message = locked_event.get("message_text", None)
                 burn_message_id = burned_event.get("message_id", None)
                 burn_message = burned_event.get("message_text", None)
+                #call list data if available
+                call_message_id = called_event.get("message_id", None)
+                call_message = called_event.get("message_text", None)
 
                 #simple function to conditionally post text depending on if the token has an mc or not
                 def marketcap_text(mc):
@@ -469,7 +477,7 @@ async def handle_message(event):
                         new_text = deployed_message + channels_text
                         #f"\n---------------------------------\n**[🔊](emoji/5823192186916704073)Called By:**\n [🔽](emoji/5820990556616004290)\n**  ⟹{chat_id_to_name[actual_chat_id]}** at {timestamp_utc} "
                         print("deployed message edit...")
-                        edit_tasks.append(clientTG.edit_message(target_deployed, deployed_message_id, new_text, parse_mode=CustomMarkdown(),link_preview=False))
+                        edit_tasks.append(clientTG.edit_message(target_deployed, deployed_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
 
                         #reply to the message as well to make the call visible
                         response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
@@ -481,9 +489,9 @@ async def handle_message(event):
                     
                         # Edit the message in the target channel with new content
                         new_text = verified_message + channels_text
-                        edit_tasks.append(clientTG.edit_message(target_verified, verified_message_id, new_text, parse_mode=CustomMarkdown(),link_preview=False))
+                        edit_tasks.append(clientTG.edit_message(target_verified, verified_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
                         #reply to the message as well to make the call visible
-                        response_text = f"[🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n `{chat_id_to_name[actual_chat_id]}` just called at [💲](emoji/5816854146627671089)**{marketcap} MC**\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
                         send_tasks.append(clientTG.send_message(target_verified, response_text, reply_to=verified_message_id,link_preview=False, parse_mode=CustomMarkdown()))
 
@@ -493,7 +501,7 @@ async def handle_message(event):
                         new_text = lock_message + channels_text
                         edit_tasks.append(clientTG.edit_message(target_longlock, lock_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
                         #reply to the message as well to make the call visible
-                        response_text = f"[🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n`{chat_id_to_name[actual_chat_id]}` just called at [💲](emoji/5816854146627671089)**{marketcap} MC**\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
                         send_tasks.append(clientTG.send_message(target_longlock, response_text, reply_to=lock_message_id, link_preview=False, parse_mode=CustomMarkdown()))
 
@@ -503,9 +511,55 @@ async def handle_message(event):
                         new_text = burn_message + channels_text
                         edit_tasks.append(clientTG.edit_message(target_burn, burn_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
                         #reply to the message as well to make the call visible
-                        response_text = f"[🔊](emoji/5823192186916704073)**Call Alert:**\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n `{chat_id_to_name[actual_chat_id]}` just called at [💲](emoji/5816854146627671089)**{marketcap} MC**\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
                         send_tasks.append(clientTG.send_message(target_burn, response_text, reply_to=burn_message_id, link_preview=False, parse_mode=CustomMarkdown()))
+
+                if call_message_id is not None:
+                    
+                        # Edit the message in the target channel with new content
+                        new_text = call_message + channels_text
+                        edit_tasks.append(clientTG.edit_message(target_call, call_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
+                    
+                if call_message_id is None:
+                    #in case this is the first call we need to form the latest message available to send as text + the first call data
+                    call_text = ""
+
+                    if burn_message_id is not None:
+                        call_text = burn_message + f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+
+                    elif lock_message_id is not None:
+                        call_text = lock_message + f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+
+                    elif verified_message_id is not None:
+                        call_text = verified_message + f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+
+                    elif deployed_message_id is not None:
+                        call_text = deployed_message + f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                    
+                        sentcall_message = await clientTG.send_message(target_call, call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        call_message_id = sentcall_message.id
+                        call_timestamp_utc = sentcall_message.date
+                        
+                        # Define the filter and the update
+                        pattern = re.compile(re.escape(token_address), re.IGNORECASE)
+                        filter_ = {"_id": pattern}
+                        update_ = {
+                            "$set": {
+                                "events.called": {
+                                    "timestamp": call_timestamp_utc,
+                                    "message_id": call_message_id,
+                                    "message_text": call_text
+                                },
+
+                            }
+                        }
+
+                        # Use upsert=True to insert if not exists, or update if exists
+                        tokens.update_one(filter_, update_, upsert=True)
+                        
+
+                        
 
 
                 # wait for all the edit_message tasks to complete
@@ -539,6 +593,8 @@ async def main():
         print(v)
         l = await clientTG.get_input_entity("https://t.me/+Ms9zqVwjRVowMzU0") #longlock
         print(l)
+        c = await clientTG.get_input_entity("https://t.me/EOTgroupedcalls") #longlock
+        print(c)
         #Start the message worker
         task = asyncio.create_task(message_worker())
         await task  # Ensure the task is awaited
@@ -551,7 +607,6 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-
 
 
 
