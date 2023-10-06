@@ -405,7 +405,7 @@ async def handle_message(event):
                     total_calls = len(channels_events)
                     
                     # Edit the message in the target channel with new content
-                    channels_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n**[🔊](emoji/5823192186916704073)Called **`{total_calls} times`  **by** `{num_distinct_channels} Channels`**:**\n[🔽](emoji/5820990556616004290)\n"
+                    channels_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🔊](emoji/5823192186916704073)**Called **`{total_calls} times`  **by** `{num_distinct_channels} Channels`**:**\n[🔽](emoji/5820990556616004290)\n"
                     print(f"Called by {num_distinct_channels} call channels")
                     print(f"Total number of calls: {total_calls}")
                     
@@ -419,10 +419,10 @@ async def handle_message(event):
                             print(f'\n\n channel mcap: [💲](emoji/5816854146627671089){channel_marketcap} \n\n')
                             #edge case in case mcarketcap is empty
                             if channel_marketcap is None:
-                                channels_text += f"**  [▶️](emoji/5816812219156927426)** @{channel_name}  [▶️](emoji/5827885422235095225)  __{timestamp}__\n"
+                                channels_text += f"  [▶️](emoji/5816812219156927426) @{channel_name}  [▶️](emoji/5827885422235095225)  __{timestamp}__\n"
                             else:
                                 smart_mc =ethsourcecode.smart_format_number(channel_marketcap)
-                                channels_text += f"**  [▶️](emoji/5816812219156927426) @{channel_name}  [▶️](emoji/5827885422235095225)  [💲](emoji/5816854146627671089)Mc:** {smart_mc}  [▶️](emoji/5827885422235095225)  __{timestamp}__\n"
+                                channels_text += f"  [▶️](emoji/5816812219156927426) @{channel_name}  [▶️](emoji/5827885422235095225)  [💲](emoji/5816854146627671089)**Mc: {smart_mc}**  [▶️](emoji/5827885422235095225)  __{timestamp}__\n"
 
                             print(f"\nChannel Name: {channel_name}")
                             print(f"Timestamp: {timestamp}")
@@ -462,7 +462,7 @@ async def handle_message(event):
                         edit_tasks.append(clientTG.edit_message(target_deployed, deployed_message_id, new_text, parse_mode=CustomMarkdown(),link_preview=False))
 
                         #reply to the message as well to make the call visible
-                        response_text = f" \n **[🔊](emoji/5823192186916704073)Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
                         print("deployed message reply...")
                         send_tasks.append(clientTG.send_message(target_deployed, response_text, reply_to=deployed_message_id,parse_mode=CustomMarkdown(), link_preview=False ))
@@ -473,7 +473,7 @@ async def handle_message(event):
                         new_text = verified_message + channels_text
                         edit_tasks.append(clientTG.edit_message(target_verified, verified_message_id, new_text, parse_mode=CustomMarkdown(),link_preview=False))
                         #reply to the message as well to make the call visible
-                        response_text = f"**[🔊](emoji/5823192186916704073)Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n `{chat_id_to_name[actual_chat_id]}` just called at [💲](emoji/5816854146627671089)**{marketcap} MC**\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        response_text = f"[🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n `{chat_id_to_name[actual_chat_id]}` just called at [💲](emoji/5816854146627671089)**{marketcap} MC**\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
                         send_tasks.append(clientTG.send_message(target_verified, response_text, reply_to=verified_message_id,link_preview=False, parse_mode=CustomMarkdown()))
 
@@ -483,7 +483,7 @@ async def handle_message(event):
                         new_text = lock_message + channels_text
                         edit_tasks.append(clientTG.edit_message(target_longlock, lock_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
                         #reply to the message as well to make the call visible
-                        response_text = f"**[🔊](emoji/5823192186916704073)Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n`{chat_id_to_name[actual_chat_id]}` just called at [💲](emoji/5816854146627671089)**{marketcap} MC**\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        response_text = f"[🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n`{chat_id_to_name[actual_chat_id]}` just called at [💲](emoji/5816854146627671089)**{marketcap} MC**\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
                         send_tasks.append(clientTG.send_message(target_longlock, response_text, reply_to=lock_message_id, link_preview=False, parse_mode=CustomMarkdown()))
 
@@ -493,7 +493,7 @@ async def handle_message(event):
                         new_text = burn_message + channels_text
                         edit_tasks.append(clientTG.edit_message(target_burn, burn_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
                         #reply to the message as well to make the call visible
-                        response_text = f"**[🔊](emoji/5823192186916704073)Call Alert:**\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n `{chat_id_to_name[actual_chat_id]}` just called at [💲](emoji/5816854146627671089)**{marketcap} MC**\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        response_text = f"[🔊](emoji/5823192186916704073)**Call Alert:**\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n `{chat_id_to_name[actual_chat_id]}` just called at [💲](emoji/5816854146627671089)**{marketcap} MC**\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
                         send_tasks.append(clientTG.send_message(target_burn, response_text, reply_to=burn_message_id, link_preview=False, parse_mode=CustomMarkdown()))
 
@@ -541,7 +541,6 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-
 
 
 

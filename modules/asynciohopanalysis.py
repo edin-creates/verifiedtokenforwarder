@@ -434,8 +434,10 @@ def shorten_and_link(eth_strings):
             url = f'https://etherscan.io/tx/{eth_string}'
             
         result.append(f'[{short_version}]({url})')
-    
-    return result
+    if len(result) == 1:
+        return result[0]
+    else:
+        return result
 
 #function to generate good summary text for when posting on telegram
 def generate_summary_text(oldest_wallet_per_hop, richest_wallet_per_hop, winning_data_per_hop, liq_removal_data_per_hop,    total_liq_removals, tx_count_per_hop):
@@ -467,7 +469,7 @@ def generate_summary_text(oldest_wallet_per_hop, richest_wallet_per_hop, winning
         if total_liq_removals > 0 or richest_wallet_per_hop or oldest_wallet_per_hop or winning_data_per_hop:
             main_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🏃](emoji/5814422056971800714) **HOP ANALYSIS:**\n [🔽](emoji/5820990556616004290)\n" + main_text
 
-        ########## Details Text
+        ########## DETAILS TEXT ####################################
         max_hops = len(tx_count_per_hop)
         for hop in range(1, max_hops + 1):
             current_hop_details = []
@@ -476,30 +478,30 @@ def generate_summary_text(oldest_wallet_per_hop, richest_wallet_per_hop, winning
             hop_winning_data = [data for data in winning_data_per_hop if data['hop'] == hop]
             if hop_winning_data:
                 max_mcap_wallet_hop = max(hop_winning_data, key=lambda x: x['max_mcap'])
-                current_hop_details.append(f"  [▶️](emoji/5816812219156927426) {asyncioethsourcecode.get_name_symbol(max_mcap_wallet_hop['address'])}, ATH MC: {asyncioethsourcecode.smart_format_number(max_mcap_wallet_hop['max_mcap'])}, [✍️](emoji/5816736498883498308) CA: {shorten_and_link(max_mcap_wallet_hop['address'])}.")
+                current_hop_details.append(f"\n  [▶️](emoji/5816812219156927426) {asyncioethsourcecode.get_name_symbol(max_mcap_wallet_hop['address'])}, ATH MC: {asyncioethsourcecode.smart_format_number(max_mcap_wallet_hop['max_mcap'])}, [✍️](emoji/5816736498883498308) CA: {shorten_and_link(max_mcap_wallet_hop['address'])}.")
 
             # Oldest address for current hop
             hop_oldest_wallet = [data for data in oldest_wallet_per_hop if data['hop'] == hop]
             if hop_oldest_wallet:
                 oldest_wallet_hop = max(hop_oldest_wallet, key=lambda x: x['age'])
-                current_hop_details.append(f"  [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) Oldest address is {shorten_and_link(oldest_wallet_hop['address'])} with age `{oldest_wallet_hop['age']}` **days**.")
+                current_hop_details.append(f"\n  [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) Oldest address is {shorten_and_link(oldest_wallet_hop['address'])} with age `{oldest_wallet_hop['age']}` **days**.")
 
             # Richest wallet for current hop
             hop_richest_wallet = [data for data in richest_wallet_per_hop if data['hop'] == hop]
             if hop_richest_wallet:
                 richest_wallet_hop = max(hop_richest_wallet, key=lambda x: x['balance'])
-                current_hop_details.append(f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) Richest wallet is {shorten_and_link(richest_wallet_hop['address'])} with a balance `{round(richest_wallet_hop['balance'],2)}` **ETH**.")
+                current_hop_details.append(f"\n  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) Richest wallet is {shorten_and_link(richest_wallet_hop['address'])} with a balance `{round(richest_wallet_hop['balance'],2)}` **ETH**.")
 
             # Number of liquidity removals for current hop
             hop_liq_removal_data = [data for data in liq_removal_data_per_hop if data['hop'] == hop]
             if hop_liq_removal_data:
                 total_removals_hop = sum(item['liquidity_removals'] for item in hop_liq_removal_data)
                 if total_removals_hop > 0:
-                    current_hop_details.append(f"  [▶️](emoji/5816812219156927426) Liquidity removals: `{total_removals_hop}`.")
+                    current_hop_details.append(f"\n  [▶️](emoji/5816812219156927426) Liquidity removals: `{total_removals_hop}`.")
 
             # Only add the hop details if there's relevant data
             if current_hop_details:
-                details_text += f"\n** hop {hop}:**\n"
+                details_text += f"\n** hop {hop}:**"
                 details_text += "\n".join(current_hop_details)
 
         return main_text, details_text
