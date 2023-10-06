@@ -412,8 +412,10 @@ async def handle_message(event):
                     # Listing each channel with timestamp and marketcap
                     for channel in channels_events:
                         channel_name = channel.get('channel_name')
+                        channel_url = channel.get('channel_post_url')
+                        
 
-                        if total_calls < 8:
+                        if total_calls < 11:
                             timestamp = channel.get('timestamp')
                             channel_marketcap = channel.get('marketcap')
                             print(f'\n\n channel mcap: [💲](emoji/5816854146627671089){channel_marketcap} \n\n')
@@ -427,7 +429,15 @@ async def handle_message(event):
                             print(f"\nChannel Name: {channel_name}")
                             print(f"Timestamp: {timestamp}")
                         else:
-                            channels_text += f" @{channel_name}, "
+                            
+                            channel_marketcap = channel.get('marketcap')
+                            print(f'\n\n channel mcap: [💲](emoji/5816854146627671089){channel_marketcap} \n\n')
+                            #edge case in case mcarketcap is empty
+                            if channel_marketcap is None:
+                                channels_text += f" [@{channel_name}]({channel_url}), "
+                            else:
+                                smart_mc =ethsourcecode.smart_format_number(channel_marketcap)
+                                channels_text += f" [@{channel_name}]({channel_url}) {smart_mc}, "
 
                 
                 # Extract message_id and message_text from each event data
@@ -541,7 +551,6 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-
 
 
 
