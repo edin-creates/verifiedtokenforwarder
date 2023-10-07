@@ -415,7 +415,7 @@ class CustomClient(httpx.AsyncClient):
         self.infuras = infuras
 
 
-
+#shortend and turns long addresses and arrays of address or txs into clean short  telegram urls
 def shorten_and_link(eth_strings):
     if not isinstance(eth_strings, list):
         eth_strings = [eth_strings]
@@ -438,6 +438,19 @@ def shorten_and_link(eth_strings):
         return result[0]
     else:
         return result
+    
+#shitty helper function that treats edge cases and returns a comma separated 
+def process_shorten_and_link_element(element):
+    # If the element is a list (or any iterable) and has more than one item
+    if isinstance(element, (list, tuple)) and len(element) > 1:
+        return ', '.join(shorten_and_link(element))
+    # If the element is a list with a single item
+    elif isinstance(element, (list, tuple)) and len(element) == 1:
+        return shorten_and_link(element[0])
+    # If the element is not a list or tuple at all
+    else:
+        return shorten_and_link(element)
+
 
 #function to generate good summary text for when posting on telegram
 def generate_summary_text(oldest_wallet_per_hop, richest_wallet_per_hop, winning_data_per_hop, liq_removal_data_per_hop,    total_liq_removals, tx_count_per_hop):
@@ -450,7 +463,7 @@ def generate_summary_text(oldest_wallet_per_hop, richest_wallet_per_hop, winning
             max_mcap_wallet = max(winning_data_per_hop, key=lambda x: x['max_mcap'])
             for tx in max_mcap_wallet['tx_path']:
                 tx = shorten_and_link(tx)
-            main_text += f"\n[🏃](emoji/5814422056971800714) at hop {max_mcap_wallet['hop']} from `{asyncioethsourcecode.get_name_symbol(max_mcap_wallet['address'])}` , **ATH MC:** `{asyncioethsourcecode.smart_format_number(max_mcap_wallet['max_mcap'])}`,  [✍️](emoji/5816736498883498308) ca: `{max_mcap_wallet['address']}`. Transaction path: {', '.join(shorten_and_link(max_mcap_wallet['tx_path']))}\n"
+            main_text += f"\n[🏃](emoji/5814422056971800714) at hop {max_mcap_wallet['hop']} from `{asyncioethsourcecode.get_name_symbol(max_mcap_wallet['address'])}` , **ATH MC:** `{asyncioethsourcecode.smart_format_number(max_mcap_wallet['max_mcap'])}`,  [✍️](emoji/5816736498883498308) ca: `{max_mcap_wallet['address']}`. Transaction path: {process_shorten_and_link_element(max_mcap_wallet['tx_path'])}\n"
 
         # Oldest wallet available
         if oldest_wallet_per_hop:
