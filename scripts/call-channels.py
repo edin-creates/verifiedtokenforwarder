@@ -168,14 +168,7 @@ class DatabaseManager:
         
         return self.tokens.find_one(query)
 
-    def get_token_datav1(self, contract_address):
-        """
-        Retrieve data for a specific token by contract address.
-        
-        :param contract_address: The contract address of the token.
-        :return: The data for the token, or None if no matching token was found.
-        """
-        return self.tokens.find_one({"_id": contract_address})
+    
     
     def get_channel_data(self, chat_id):
         """
@@ -380,7 +373,7 @@ async def handle_message(event):
             # Use upsert=True to insert if not exists, or update if exists
             tokens.update_one(filter_, update_, upsert=False)
 
-            asyncio.sleep(2)
+            await asyncio.sleep(2)
             # Fetch token data by contract address
             token_data = database_manager.get_token_data(token_address)
             print(f"\n\nThis is the mongo db token data {token_data}")
@@ -515,27 +508,109 @@ async def handle_message(event):
                         #time.sleep(0.2)
                         send_tasks.append(clientTG.send_message(target_burn, response_text, reply_to=burn_message_id, link_preview=False, parse_mode=CustomMarkdown()))
 
+                ############################################################
+                ####### #Manages the ************* CALL LIST CHANNEL ************* and all its fucking edge cases
                 if call_message_id is not None:
                     
                         # Edit the message in the target channel with new content
                         new_text = call_message + channels_text
                         edit_tasks.append(clientTG.edit_message(target_call, call_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
-                    
+                        
+                        #reply for a call notification
+                        response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        send_tasks.append(clientTG.send_message(target_call, response_text, reply_to=call_message_id, link_preview=False, parse_mode=CustomMarkdown()))
+                        
+                     
                 if call_message_id is None:
                     #in case this is the first call we need to form the latest message available to send as text + the first call data
                     call_text = ""
 
                     if burn_message_id is not None:
-                        call_text = burn_message + f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        call_text = burn_message + channels_text
+                        
+                        sentcall_message = await clientTG.send_message(target_call, call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        call_message_id = sentcall_message.id
+                        call_timestamp_utc = sentcall_message.date
+                        
+                        # Define the filter and the update
+                        pattern = re.compile(re.escape(token_address), re.IGNORECASE)
+                        filter_ = {"_id": pattern}
+                        update_ = {
+                            "$set": {
+                                "events.called": {
+                                    "timestamp": call_timestamp_utc,
+                                    "message_id": call_message_id,
+                                    "message_text": burn_message,
+                                    "caller_username": channel_name ,
+                                    #"called_telegram_id": actual_chat_id,
+                                    "call_url": channel_url ,
+                                    "earliest_marketcap": number_marketcap
+                                },
+
+                            }
+                        }
+
+                        # Use upsert=True to insert if not exists, or update if exists
+                        tokens.update_one(filter_, update_, upsert=True)
 
                     elif lock_message_id is not None:
-                        call_text = lock_message + f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        call_text = lock_message + channels_text
+                        
+                        sentcall_message = await clientTG.send_message(target_call, call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        call_message_id = sentcall_message.id
+                        call_timestamp_utc = sentcall_message.date
+                        
+                        # Define the filter and the update
+                        pattern = re.compile(re.escape(token_address), re.IGNORECASE)
+                        filter_ = {"_id": pattern}
+                        update_ = {
+                            "$set": {
+                                "events.called": {
+                                    "timestamp": call_timestamp_utc,
+                                    "message_id": call_message_id,
+                                    "message_text": lock_message,
+                                    "caller_username": channel_name ,
+                                    #"called_telegram_id": actual_chat_id,
+                                    "call_url": channel_url ,
+                                    "earliest_marketcap": number_marketcap
+                                },
+
+                            }
+                        }
+
+                        # Use upsert=True to insert if not exists, or update if exists
+                        tokens.update_one(filter_, update_, upsert=True)
 
                     elif verified_message_id is not None:
-                        call_text = verified_message + f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        call_text = verified_message + channels_text
+                        
+                        sentcall_message = await clientTG.send_message(target_call, call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        call_message_id = sentcall_message.id
+                        call_timestamp_utc = sentcall_message.date
+                        
+                        # Define the filter and the update
+                        pattern = re.compile(re.escape(token_address), re.IGNORECASE)
+                        filter_ = {"_id": pattern}
+                        update_ = {
+                            "$set": {
+                                "events.called": {
+                                    "timestamp": call_timestamp_utc,
+                                    "message_id": call_message_id,
+                                    "message_text": verified_message,
+                                    "caller_username": channel_name ,
+                                    #"called_telegram_id": actual_chat_id,
+                                    "call_url": channel_url ,
+                                    "earliest_marketcap": number_marketcap
+                                },
+
+                            }
+                        }
+
+                        # Use upsert=True to insert if not exists, or update if exists
+                        tokens.update_one(filter_, update_, upsert=True)
 
                     elif deployed_message_id is not None:
-                        call_text = deployed_message + f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        call_text = deployed_message + channels_text
                     
                         sentcall_message = await clientTG.send_message(target_call, call_text, link_preview=False, parse_mode=CustomMarkdown())
                         call_message_id = sentcall_message.id
@@ -549,7 +624,11 @@ async def handle_message(event):
                                 "events.called": {
                                     "timestamp": call_timestamp_utc,
                                     "message_id": call_message_id,
-                                    "message_text": call_text
+                                    "message_text": deployed_message,
+                                    "caller_username": channel_name ,
+                                    #"called_telegram_id": actual_chat_id,
+                                    "call_url": channel_url ,
+                                    "earliest_marketcap": number_marketcap
                                 },
 
                             }

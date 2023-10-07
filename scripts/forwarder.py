@@ -136,7 +136,8 @@ def treatment_message_text(message_text, tokens):
         logger.info(
             f"Extracted contract address: {contract_address}")
         
-        token_data = tokens.find_one({"_id": contract_address})
+        pattern = re.compile(re.escape(contract_address), re.IGNORECASE)
+        token_data = tokens.find_one({"_id": pattern})
         # If token_data is not None, access the pastcoin_data field
         if token_data:
             pastcoins = token_data.get("pastcoin_data", "No pastcoin_data field found.")
@@ -429,7 +430,8 @@ async def main():
                     #Mongo db add document with data
 
                     # Sample data
-                    filter_ = {"_id": contract_address}
+                    pattern = re.compile(re.escape(contract_address), re.IGNORECASE)
+                    filter_ = {"_id": pattern}
                     update_ = {
                         "$setOnInsert": {
                             "deployer_address": deployer_address,
@@ -475,7 +477,8 @@ async def main():
                     ###########################################
 
                     # Fetch the document
-                    token_data = tokens.find_one({"_id": contract_address})
+                    pattern = re.compile(re.escape(contract_address), re.IGNORECASE)
+                    token_data = tokens.find_one({"_id": pattern})
                     print(f"\n\nmongodb database tokendata {token_data}\n\n")
                     # If token_data is not None, access the pastcoin_data field
                     if token_data is not None:
@@ -663,7 +666,8 @@ async def main():
                     timestamp_utc = sent_message.date
 
                     # Define the filter and the update
-                    filter_ = {"_id": contract_address}
+                    pattern = re.compile(re.escape(contract_address), re.IGNORECASE)
+                    filter_ = {"_id": pattern}
                     update_ = {
                         "$set": {
                             "events.verified": {
@@ -707,7 +711,8 @@ async def main():
                 timestamp_utc = sent_message.date
 
                 # Define the filter and the update
-                filter_ = {"_id": contract_address}
+                pattern = re.compile(re.escape(contract_address), re.IGNORECASE)
+                filter_ = {"_id": pattern}
                 update_ = {
                     "$set": {
                         "events.burned": {
@@ -742,7 +747,8 @@ async def main():
                     timestamp_utc = sent_message.date
 
                     # Define the filter and the update
-                    filter_ = {"_id": contract_address}
+                    pattern = re.compile(re.escape(contract_address), re.IGNORECASE)
+                    filter_ = {"_id": pattern}
                     update_ = {
                         "$set": {
                             "events.locked": {
