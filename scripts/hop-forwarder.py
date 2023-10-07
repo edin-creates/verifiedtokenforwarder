@@ -147,8 +147,8 @@ class DatabaseManager:
         :param contract_address: The contract address of the token.
         :return: The data for the token, or None if no matching token was found.
         """
-        pattern = re.compile(re.escape(contract_address), re.IGNORECASE)
-        return self.tokens.find_one({"_id": pattern})
+        query = {"_id": {"$regex": f"^{contract_address}$", "$options": 'i'}}
+        return self.tokens.find_one(query)
         
     def close(self):
         if self.client is not None:
@@ -281,8 +281,8 @@ async def main():
                     print(f"\n\nsummary: {hop_message}\n\n")
                     
                     # Define the filter and the update
-                    pattern = re.compile(re.escape(contract_address), re.IGNORECASE)
-                    filter_ = {"_id": pattern}
+                    
+                    filter_ = {"_id": {"$regex": f"^{contract_address}$", "$options": 'i'}}
                     update_ = {
                         "$set": {
                             "hop_message": f"{hop_message}",

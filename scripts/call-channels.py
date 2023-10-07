@@ -354,8 +354,8 @@ async def handle_message(event):
             message_id = event.id
             timestamp_utc = event.date
             # Define the filter and the update
-            pattern = re.compile(re.escape(token_address), re.IGNORECASE)
-            filter_ = {"_id": pattern}
+            
+            filter_ = {"_id": {"$regex": f"^{token_address}$", "$options": 'i'}}
             update_ = {
                 "$push": {
                     "channels": {
@@ -533,8 +533,8 @@ async def handle_message(event):
                         call_timestamp_utc = sentcall_message.date
                         
                         # Define the filter and the update
-                        pattern = re.compile(re.escape(token_address), re.IGNORECASE)
-                        filter_ = {"_id": pattern}
+                        
+                        filter_ = {"_id": {"$regex": f"^{token_address}$", "$options": 'i'}}
                         update_ = {
                             "$set": {
                                 "events.called": {
@@ -561,8 +561,8 @@ async def handle_message(event):
                         call_timestamp_utc = sentcall_message.date
                         
                         # Define the filter and the update
-                        pattern = re.compile(re.escape(token_address), re.IGNORECASE)
-                        filter_ = {"_id": pattern}
+                        
+                        filter_ = {"_id": {"$regex": f"^{token_address}$", "$options": 'i'}}
                         update_ = {
                             "$set": {
                                 "events.called": {
@@ -589,8 +589,8 @@ async def handle_message(event):
                         call_timestamp_utc = sentcall_message.date
                         
                         # Define the filter and the update
-                        pattern = re.compile(re.escape(token_address), re.IGNORECASE)
-                        filter_ = {"_id": pattern}
+                        
+                        filter_ = {"_id": {"$regex": f"^{token_address}$", "$options": 'i'}}
                         update_ = {
                             "$set": {
                                 "events.called": {
@@ -617,8 +617,8 @@ async def handle_message(event):
                         call_timestamp_utc = sentcall_message.date
                         
                         # Define the filter and the update
-                        pattern = re.compile(re.escape(token_address), re.IGNORECASE)
-                        filter_ = {"_id": pattern}
+                        
+                        filter_ = {"_id": {"$regex": f"^{token_address}$", "$options": 'i'}}
                         update_ = {
                             "$set": {
                                 "events.called": {
@@ -686,7 +686,6 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-
 
 
 
