@@ -22,6 +22,7 @@ from pymongo import MongoClient, IndexModel, ASCENDING
 import json
 from telethon.extensions import markdown
 from telethon import types
+from modules import asynciohopanalysis
 
 MAX_RETRIES = 3
 MIN_DELAY = 0.3
@@ -287,10 +288,10 @@ def treatment_message_text(message_text, tokens):
             message_text += f"  [▶️](emoji/5816812219156927426)  [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
         else:
             message_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
-        
+        from modules import asynciohopanalysis
         if number_lpremove is not None:
             if number_lpremove > 0 :
-                formatted_lpremove_addresses = [f"`{address}`" for address in tx_lpremove]
+                formatted_lpremove_addresses = asynciohopanalysis.shorten_and_link(tx_lpremove)
                 result_lpremove = ', '.join(formatted_lpremove_addresses)
                 message_text += f"  [▶️](emoji/5816812219156927426)  🛑 **liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) {result_lpremove} \n"
 
@@ -409,7 +410,7 @@ async def main():
 
                     if number_lpremove is not None:
                         if number_lpremove > 0 :
-                            formatted_lpremove_addresses = [f"`{address}`" for address in tx_lpremove]
+                            formatted_lpremove_addresses = asynciohopanalysis.shorten_and_link(tx_lpremove)
                             result_lpremove = ', '.join(formatted_lpremove_addresses)
                             message_text += f"  [▶️](emoji/5816812219156927426) **  🛑 liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) {result_lpremove} \n"
                     
@@ -643,7 +644,7 @@ async def main():
                         message_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
 
                     if number_lpremove is not None and number_lpremove>0 :
-                        formatted_lpremove_addresses = [f"`{address}`" for address in tx_lpremove]
+                        formatted_lpremove_addresses = asynciohopanalysis.shorten_and_link(tx_lpremove)
                         result_lpremove = ', '.join(formatted_lpremove_addresses)
                         message_text += f"  [▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n       [🔽](emoji/5820990556616004290) {result_lpremove} \n"
                     
