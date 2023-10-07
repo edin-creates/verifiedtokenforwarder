@@ -291,8 +291,7 @@ def treatment_message_text(message_text, tokens):
         from modules import asynciohopanalysis
         if number_lpremove is not None:
             if number_lpremove > 0 :
-                formatted_lpremove_addresses = asynciohopanalysis.shorten_and_link(tx_lpremove)
-                result_lpremove = ', '.join(formatted_lpremove_addresses)
+                result_lpremove = asynciohopanalysis.process_shorten_and_link_element(tx_lpremove)
                 message_text += f"  [▶️](emoji/5816812219156927426)  🛑 **liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) {result_lpremove} \n"
 
         if int(pastcoins[1]) != 0:
@@ -410,8 +409,7 @@ async def main():
 
                     if number_lpremove is not None:
                         if number_lpremove > 0 :
-                            formatted_lpremove_addresses = asynciohopanalysis.shorten_and_link(tx_lpremove)
-                            result_lpremove = ', '.join(formatted_lpremove_addresses)
+                            result_lpremove = asynciohopanalysis.process_shorten_and_link_element(tx_lpremove)
                             message_text += f"  [▶️](emoji/5816812219156927426) **  🛑 liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) {result_lpremove} \n"
                     
                     if pastcoins[1] != 0: #checks if one ath Mcap past ca at least exists
@@ -644,8 +642,7 @@ async def main():
                         message_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
 
                     if number_lpremove is not None and number_lpremove>0 :
-                        formatted_lpremove_addresses = asynciohopanalysis.shorten_and_link(tx_lpremove)
-                        result_lpremove = ', '.join(formatted_lpremove_addresses)
+                        result_lpremove = asynciohopanalysis.process_shorten_and_link_element(tx_lpremove)
                         message_text += f"  [▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n       [🔽](emoji/5820990556616004290) {result_lpremove} \n"
                     
                     if pastcoins[1] != 0:
