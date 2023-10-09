@@ -332,11 +332,14 @@ def match_telegram_with_address(text):
             }
 
             # Fetch documents from MongoDB using the defined query
-            documents = db['tokens'].find(query).sort("events.deployed.timestamp", -1)
+            documents = tokens.find(query).sort("events.deployed.timestamp", -1)
 
             # Extract the Ethereum addresses (_id field)
             ethereum_addresses = [doc['_id'] for doc in documents]
-            return ethereum_addresses
+            if not ethereum_addresses:
+                return None
+            else:
+                return ethereum_addresses[0]
 
 # Worker to process queued messages
 async def message_worker():
@@ -410,8 +413,28 @@ async def handle_message(event):
                 }
             }
 
+
             # Use upsert=True to insert if not exists, or update if exists
             tokens.update_one(filter_, update_, upsert=False)
+
+            ############################################################################################
+            # Construct the field path for the token address
+            field_path = f"calls.{token_address.lower()}"
+
+            # First, try to add the call detail to an existing token address
+            result = channels.update_one(
+                {"_id": actual_chat_id, field_path: {"$exists": True}},
+                {"$push": {f"{field_path}": {"call_message": message_text, "marketcap": number_marketcap, "liquidity": number_liquidity, "date": timestamp_utc}}}
+            )
+
+            # If the token address didn't exist for the caller, initialize it with the call detail
+            if not result.modified_count:
+                result = channels.update_one(
+                    {"_id": actual_chat_id},
+                    {"$set": {f"{field_path}": [{"call_message": message_text, "marketcap": number_marketcap, "liquidity": number_liquidity, "date": timestamp_utc}]}}
+                )
+
+            ############################################################################################
 
             await asyncio.sleep(2)
             # Fetch token data by contract address
