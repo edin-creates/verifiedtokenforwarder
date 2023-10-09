@@ -314,7 +314,7 @@ async def main():
             logger.info(f"message text: {message_text}")
             client.parse_mode = CustomMarkdown()
             #freshly deployed tokens #####################################################################################
-            if "Deployed" in message_text and "🛑" not in message_text:
+            if "Deployed" in message_text: # and "🛑" not in message_text:
                 logger.info("Found a verified contract message")
 
 
@@ -463,7 +463,7 @@ async def main():
                     logger.info("Forwarded message to target channel")
             
             #Verified Tokens ################################################################################
-            if "Verified" in message_text and "🛑" not in message_text:
+            if "Verified" in message_text: # and "🛑" not in message_text:
                 logger.info("Found a verified contract message")         
 
                 contract_address = caextractor.extract_contract_address(message_text)
@@ -696,7 +696,7 @@ async def main():
             
             ###############################################################################################
             #Burned Tokens ################################################################################
-            if "burned" in message_text and "🛑" not in message_text:
+            if "burned" in message_text: # and "🛑" not in message_text:
                 logger.info("Found a verified contract message")
                 
                 message_text, contract_address = treatment_message_text(message_text, tokens)    
@@ -732,7 +732,7 @@ async def main():
             match = re.search(r"locked for (\d+) days", message_text)
             if match:
                 days = int(match.group(1))
-                if days > 180 and "🛑" not in message_text:
+                if days > 180: # and "🛑" not in message_text:
                     logger.info("Found a Long Lock contract message")
                 
                     message_text, contract_address = treatment_message_text(message_text, tokens)

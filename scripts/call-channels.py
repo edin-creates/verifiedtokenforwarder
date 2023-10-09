@@ -299,6 +299,44 @@ async def reconnect_client():
     await clientTG.connect()
     print("telegram client reconnected")
 
+def match_telegram_with_address(text):
+            # step 1: extract the telegram address
+            def extract_username(calltext):
+                # The regex pattern will look for either '@' or 't.me/' followed by the username.
+                # The username is assumed to consist of alphanumeric characters, underscores, or periods.
+                pattern = r'@([\w\.]+)|t\.me/([\w\.]+)'
+                match = re.search(pattern, calltext, re.IGNORECASE)
+
+                if match:
+                    # Return the first non-None group
+                    return next(group for group in match.groups() if group)
+
+                return None
+            username = extract_username(text)
+            print(f"extracted username {username}")
+            if not username:
+                return []
+
+            #step 2: for each tg in the array search the last 48 hours of tokens within the object social media and telegram for a match
+            from datetime import datetime, timedelta
+
+            # Calculate the timestamp for 24 hours ago in UTC
+            time_24_hours_ago = datetime.utcnow() - timedelta(days=60)
+
+            # Define the regular expression pattern to match the variations of the Telegram username
+            telegram_pattern = rf"(@{username}|t\.me/{username}|https://t\.me/{username})"
+            
+            query = {
+                "social_media.telegram": {"$regex": telegram_pattern, "$options": "i"},  # Case-insensitive regex search
+                "events.deployed.timestamp": {"$gt": time_24_hours_ago}  # Check the timestamp of deployed event
+            }
+
+            # Fetch documents from MongoDB using the defined query
+            documents = db['tokens'].find(query).sort("events.deployed.timestamp", -1)
+
+            # Extract the Ethereum addresses (_id field)
+            ethereum_addresses = [doc['_id'] for doc in documents]
+            return ethereum_addresses
 
 # Worker to process queued messages
 async def message_worker():
@@ -330,6 +368,8 @@ async def handle_message(event):
         # Extract the token address from the text (using our previous functions)
         token_address = extract_relevant_address_from_text(message_text)
         
+        if not token_address:
+            token_address = match_telegram_with_address(message_text)
         # If a token address was found, process it (e.g., print it)
         if token_address:
             #translates the telethon chat id into a readable format by our dictionary, removes -100 prefix
@@ -476,7 +516,7 @@ async def handle_message(event):
                         response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
                         print("deployed message reply...")
-                        send_tasks.append(clientTG.send_message(target_deployed, response_text, reply_to=deployed_message_id,parse_mode=CustomMarkdown(), link_preview=False ))
+                        #send_tasks.append(clientTG.send_message(target_deployed, response_text, reply_to=deployed_message_id,parse_mode=CustomMarkdown(), link_preview=False ))
 
                 if verified_message_id is not None:
                     
@@ -484,9 +524,10 @@ async def handle_message(event):
                         new_text = verified_message + channels_text
                         edit_tasks.append(clientTG.edit_message(target_verified, verified_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
                         #reply to the message as well to make the call visible
-                        response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        
+                        #response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
-                        send_tasks.append(clientTG.send_message(target_verified, response_text, reply_to=verified_message_id,link_preview=False, parse_mode=CustomMarkdown()))
+                        #send_tasks.append(clientTG.send_message(target_verified, response_text, reply_to=verified_message_id,link_preview=False, parse_mode=CustomMarkdown()))
 
                 if lock_message_id is not None:
                     
@@ -494,9 +535,10 @@ async def handle_message(event):
                         new_text = lock_message + channels_text
                         edit_tasks.append(clientTG.edit_message(target_longlock, lock_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
                         #reply to the message as well to make the call visible
-                        response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        
+                        #response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
-                        send_tasks.append(clientTG.send_message(target_longlock, response_text, reply_to=lock_message_id, link_preview=False, parse_mode=CustomMarkdown()))
+                        #send_tasks.append(clientTG.send_message(target_longlock, response_text, reply_to=lock_message_id, link_preview=False, parse_mode=CustomMarkdown()))
 
                 if burn_message_id is not None:
                     
@@ -504,9 +546,10 @@ async def handle_message(event):
                         new_text = burn_message + channels_text
                         edit_tasks.append(clientTG.edit_message(target_burn, burn_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
                         #reply to the message as well to make the call visible
-                        response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
+                        
+                        #response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
                         #time.sleep(0.2)
-                        send_tasks.append(clientTG.send_message(target_burn, response_text, reply_to=burn_message_id, link_preview=False, parse_mode=CustomMarkdown()))
+                        #send_tasks.append(clientTG.send_message(target_burn, response_text, reply_to=burn_message_id, link_preview=False, parse_mode=CustomMarkdown()))
 
                 ############################################################
                 ####### #Manages the ************* CALL LIST CHANNEL ************* and all its fucking edge cases
@@ -692,4 +735,4 @@ if __name__ == '__main__':
 
 
 
-
+s
