@@ -852,14 +852,29 @@ def gfcc(contract_address, api_key, proxy, header):
     except requests.exceptions.RequestException as e:
         print(f"API request error: {e}")
         return []
-
+    
+#generic retry function    
+def retry_on_failure(func, max_retries=3, delay=3):
+    """A simple retry mechanism."""
+    retries = 0
+    while retries < max_retries:
+        try:
+            return func()
+        except Exception as e:
+            retries += 1
+            if retries < max_retries:
+                print(f"Error: {e}. Retrying in {delay} seconds...")
+                time.sleep(delay)
+            else:
+                print(f"Failed after {max_retries} retries.")
+                raise
 # batch treatment of all the contracts listed returns the highest contract mcap with more than 300 transactions
 def filter_pastcoin_contracts(address, api_key, proxy, header):
-    pastcoins = get_former_contracts_created(address, api_key, proxy, header)
+    pastcoins = retry_on_failure(lambda: get_former_contracts_created(address, api_key, proxy, header)) #point of potential failure 1
     filtered_contracts = []
     
     for contract in pastcoins:
-        tx_count = get_tx_count(contract)
+        tx_count = retry_on_failure(lambda: get_tx_count(contract))  #point of potential failure 2
         
         
         if tx_count is not None:
@@ -876,7 +891,7 @@ def filter_pastcoin_contracts(address, api_key, proxy, header):
         max_contract = None
         
         for contract in filtered_contracts:
-            mcap = get_max_marketcap(contract)
+            mcap = retry_on_failure(lambda: get_max_marketcap(contract))  #point of potential failure 3
             print(f"\nlocal max mcap value {mcap}")
 
             
@@ -954,17 +969,18 @@ def filter_pastcoin_contracts(address, api_key, proxy, header):
 #         return "No valid contract found", 0 , 0 
 
 
+
 #function that analyses the addresses other than deployer, and return the number of real txs with txcount > 300, the lenght of filtered txs is used in the forwarder to setup condition on which pastcoin data to post so dont change it without checking there too
 def fpc(address, api_key, proxy, header):
     start = time.time()
     
-    pastcoins = gfcc(address, api_key, proxy, header)
+    pastcoins = retry_on_failure(lambda: gfcc(address, api_key, proxy, header)) #point of potential failure 1
     contracts_deployed_count = len(pastcoins)
     filtered_contracts = []
 
     # Modify the function to return tx_count too
     def get_valid_tx_count(contract):
-        tx_count = get_tx_count(contract)
+        tx_count = retry_on_failure(lambda: get_tx_count(contract))  #point of potential failure 2
         if tx_count is not None and isinstance(tx_count, int) and tx_count >= 90:
             return (contract, tx_count)
         else:
@@ -990,7 +1006,7 @@ def fpc(address, api_key, proxy, header):
         max_contract = None
         
         for contract, tx_count in filtered_contracts:
-            mcap = get_max_marketcap(contract)
+            mcap = retry_on_failure(lambda: get_max_marketcap(contract))  #point of potential failure 3
             print(f"\nlocal max mcap calculated: {mcap}")
             
             if mcap > max_mcap:
