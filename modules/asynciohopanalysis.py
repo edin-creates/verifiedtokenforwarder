@@ -515,7 +515,7 @@ def generate_summary_text(oldest_wallet_per_hop, richest_wallet_per_hop, winning
             # Only add the hop details if there's relevant data
             if current_hop_details:
                 details_text += f"\n** hop {hop}:**"
-                details_text += "\n".join(current_hop_details)
+                details_text += "".join(current_hop_details)
 
         return main_text, details_text
 
