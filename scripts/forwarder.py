@@ -255,7 +255,7 @@ def treatment_message_text(message_text, tokens):
         message_text = re.sub(pattern, "", message_text, flags=re.IGNORECASE)
 
         # Add an emoji before "CA:" and "Suplly"
-        message_text = message_text.replace("CA:", "[✍️](emoji/5816736498883498308) CA:")
+        message_text = message_text.replace("**CA:**", "[✍️](emoji/5816736498883498308) **CA:**")
         message_text = message_text.replace("**Supply:**", "[🛢](emoji/5814449390143671921) **Supply**")
 
         # Replace the "📊" emoji with another emoji, for example "🔍"
@@ -372,7 +372,7 @@ async def main():
                     message_text = re.sub(pattern, "", message_text, flags=re.IGNORECASE)
 
                     # Add an emoji before "CA:" and "Suplly"
-                    message_text = message_text.replace("CA:", "[✍️](emoji/5816736498883498308) CA:")
+                    message_text = message_text.replace("**CA:**", "[✍️](emoji/5816736498883498308) **CA:**")
                     message_text = message_text.replace("**Supply:**", "[🛢](emoji/5814449390143671921) **Supply**")
 
                     # Replace the "📊" emoji with another emoji, for example "🔍"
@@ -605,7 +605,7 @@ async def main():
                     message_text = re.sub(pattern, "", message_text, flags=re.IGNORECASE)
 
                     # Add an emoji before "CA:" and "Suplly"
-                    message_text = message_text.replace("CA:", "[✍️](emoji/5816736498883498308) CA:")
+                    message_text = message_text.replace("**CA:**", "[✍️](emoji/5816736498883498308) **CA:**")
                     message_text = message_text.replace("**Supply:**", "[🛢](emoji/5814449390143671921) **Supply**")
 
                     # Replace the "📊" emoji with another emoji, for example "🔍"
