@@ -299,48 +299,55 @@ async def reconnect_client():
     await clientTG.connect()
     print("telegram client reconnected")
 
+#uses the mongo db database to search for a corresponding ca to a telegram channel if its unique, pretty neat
 def match_telegram_with_address(text):
-            # step 1: extract the telegram address
-            def extract_username(calltext):
-                # The regex pattern will look for either '@' or 't.me/' followed by the username.
-                # The username is assumed to consist of alphanumeric characters, underscores, or periods.
-                pattern = r'@([\w\.]+)|t\.me/([\w\.]+)'
-                match = re.search(pattern, calltext, re.IGNORECASE)
+    # step 1: extract the telegram address
+    def extract_usernames(calltext):
+        # The regex pattern will look for either '@' or 't.me/' followed by the username.
+        # The username is assumed to consist of alphanumeric characters, underscores, or periods.
+        pattern = r'@([\w\.]+)|t\.me/([\w\.]+)'
+        
+        
+        matches = re.findall(pattern, calltext, re.IGNORECASE)
+        usernames = [username for match in matches for username in match if username]
 
-                if match:
-                    # Return the first non-None group
-                    return next(group for group in match.groups() if group)
+        print(f"\nList of username pairs found: {usernames}\n")
+        
 
-                return None
-            username = extract_username(text)
-            print(f"extracted username {username}")
-            if not username:
-                return []
+        return usernames
+    
+    username = extract_usernames(text)
+    print(f"extracted username {username}")
+    if not username:
+        return []
 
-            #step 2: for each tg in the array search the last 48 hours of tokens within the object social media and telegram for a match
-            from datetime import datetime, timedelta
+    #step 2: for each tg in the array search the last 48 hours of tokens within the object social media and telegram for a match
+    from datetime import datetime, timedelta
 
-            # Calculate the timestamp for 24 hours ago in UTC
-            time_24_hours_ago = datetime.utcnow() - timedelta(days=60)
+    # Calculate the timestamp for 24 hours ago in UTC
+    time_24_hours_ago = datetime.utcnow() - timedelta(days=60)
+    ethereum_addresses = []
+    for usertg in username:
+    # Define the regular expression pattern to match the variations of the Telegram username
+        telegram_pattern = rf"(@{usertg}|t\.me/{usertg}|https://t\.me/{usertg})"
+        
+        query = {
+            "social_media.telegram": {"$regex": telegram_pattern, "$options": "i"},  # Case-insensitive regex search
+            "events.deployed.timestamp": {"$gt": time_24_hours_ago}  # Check the timestamp of deployed event
+        }
 
-            # Define the regular expression pattern to match the variations of the Telegram username
-            telegram_pattern = rf"(@{username}|t\.me/{username}|https://t\.me/{username})"
-            
-            query = {
-                "social_media.telegram": {"$regex": telegram_pattern, "$options": "i"},  # Case-insensitive regex search
-                "events.deployed.timestamp": {"$gt": time_24_hours_ago}  # Check the timestamp of deployed event
-            }
-
-            # Fetch documents from MongoDB using the defined query
-            documents = tokens.find(query).sort("events.deployed.timestamp", -1)
-
+        # Fetch documents from MongoDB using the defined query
+        documents = tokens.find(query).sort("events.deployed.timestamp", -1)
+        for doc in documents:
             # Extract the Ethereum addresses (_id field)
-            ethereum_addresses = [doc['_id'] for doc in documents]
-            if not ethereum_addresses:
-                return None
-            else:
-                return ethereum_addresses[0]
-
+            ethereum_addresses.append(doc['_id'])
+    print(f"\nethereum addresses found from the tg posts {ethereum_addresses}\n")
+    if not ethereum_addresses:
+        return None
+    elif len(ethereum_addresses) > 1:
+        return None
+    else:
+        return ethereum_addresses[0]
 # Worker to process queued messages
 async def message_worker():
     while True:
