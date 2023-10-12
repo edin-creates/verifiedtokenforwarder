@@ -1,3 +1,4 @@
+from collections import deque
 from decimal import Decimal
 import os
 from dotenv import load_dotenv
@@ -154,8 +155,10 @@ class DatabaseManager:
         index7 = IndexModel([("events.burned.timestamp", ASCENDING)])
         self.tokens.create_indexes([index1, index2, index3, index4, index5, index6, index7])
 
+    
+    
 
-
+    #MONGO DB function to retrieve token data case insensitive and all
     def get_token_data(self, contract_address):
         """
         Retrieve data for a specific token by contract address.
@@ -183,6 +186,20 @@ class DatabaseManager:
         if self.client is not None:
             self.client.close()
             self.client = None
+
+# Initialize the deque to store the 4 most recent posts
+recent_posts_deque = deque(maxlen=4)
+#DEQUE checks if the token is posted in the four most recent posts, this dequeue works as a rolling snowball even if empty it should get filled and start cleaning up the tg posts
+def is_token_in_recent_posts(token_address):
+    global recent_posts_deque  # explicitly tell Python you're using the global variable
+    return any(post['token_address'].lower() == token_address.lower() for post in recent_posts_deque)
+
+def get_message_and_id_of_token(token_address):
+    for post in recent_posts_deque:
+        if post['token_address'].lower() == token_address.lower():
+            return post['message_id'], post['message_text']
+        
+    return None
 
 # Define the URI for connecting to your MongoDB instance
 uri = f"mongodb://{mongodbusername}:{mongodbpassword}@localhost:27017/tokenDatabase?authSource=tokenDatabase"
@@ -584,15 +601,43 @@ async def handle_message(event):
                 ############################################################
                 ####### #Manages the ************* CALL LIST CHANNEL ************* and all its fucking edge cases
                 if call_message_id is not None:
-                    
+                        
                         # Edit the message in the target channel with new content
                         new_text = call_message + channels_text
-                        edit_tasks.append(clientTG.edit_message(target_call, call_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
-                        
+
                         #reply for a call notification
                         response_text = f" \n [🔊](emoji/5823192186916704073)**Call Alert:**\n [▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}  "
-                        send_tasks.append(clientTG.send_message(target_call, response_text, reply_to=call_message_id, link_preview=False, parse_mode=CustomMarkdown()))
+                        edit_tasks.append(clientTG.edit_message(target_call, call_message_id, new_text, parse_mode=CustomMarkdown(), link_preview=False))
+
+                        # Assuming token_address variable holds the current token's address
+                        if is_token_in_recent_posts(token_address):
+                            # If token is in recent posts, edit the existing message
+                            message_id_to_edit, message_id_text = get_message_and_id_of_token(token_address)
+                            shortened_message = message_id_text + f"\n `{chat_id_to_name[actual_chat_id]}` just called {marketcap_text(marketcap)}\n https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}"
+                            
+                            # Add the logic to edit the message using message_id_to_edit
+                            edit_tasks.append(clientTG.edit_message(target_call, message_id_to_edit, shortened_message, parse_mode=CustomMarkdown(), link_preview=False))
+
+                            #update the reply message with the recent added post
+                            try:
+                                for post in recent_posts_deque:
+                                    if post['token_address'].lower() == token_address.lower():
+                                        post['message_text'] = shortened_message
+                            except Exception as e:
+                                pass
                         
+                        else:
+                            deque_edit_message = await clientTG.send_message(target_call, response_text, reply_to=call_message_id, link_preview=False, parse_mode=CustomMarkdown())
+
+                            # If token is not in recent posts, add to the deque and send a new message
+                            recent_posts_deque.append({
+                                'token_address': token_address.lower(),
+                                'message_id': deque_edit_message.id,  # Assuming this holds the current message ID
+                                'message_text': deque_edit_message.text,
+                                'type': 'reply',  # Or 'lone' based on the context
+                                'timestamp': datetime.utcnow()  # Current timestamp
+                            })
+                            
                      
                 if call_message_id is None:
                     #in case this is the first call we need to form the latest message available to send as text + the first call data
