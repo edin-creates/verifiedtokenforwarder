@@ -646,7 +646,7 @@ async def handle_message(event):
                     if burn_message_id is not None:
                         call_text = burn_message + channels_text
                         
-                        sentcall_message = await clientTG.send_message(target_call, call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
                         call_message_id = sentcall_message.id
                         call_timestamp_utc = sentcall_message.date
                         
@@ -674,7 +674,7 @@ async def handle_message(event):
                     elif lock_message_id is not None:
                         call_text = lock_message + channels_text
                         
-                        sentcall_message = await clientTG.send_message(target_call, call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
                         call_message_id = sentcall_message.id
                         call_timestamp_utc = sentcall_message.date
                         
@@ -702,7 +702,7 @@ async def handle_message(event):
                     elif verified_message_id is not None:
                         call_text = verified_message + channels_text
                         
-                        sentcall_message = await clientTG.send_message(target_call, call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
                         call_message_id = sentcall_message.id
                         call_timestamp_utc = sentcall_message.date
                         
@@ -730,7 +730,7 @@ async def handle_message(event):
                     elif deployed_message_id is not None:
                         call_text = deployed_message + channels_text
                     
-                        sentcall_message = await clientTG.send_message(target_call, call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
                         call_message_id = sentcall_message.id
                         call_timestamp_utc = sentcall_message.date
                         
@@ -774,24 +774,47 @@ async def handle_message(event):
         await asyncio.sleep(7)                
 
 
+# Global variable to store the cached media, the first value is a boolean indicator of wether the entities of the channels used are fetched while the last one is caching the call image file so that it can be reused
+
+cached_media = [None, None, None, None, None]
 
 async def main():
+    global cached_media
+    # Get the message containing the image
+    deployed_image_id = 742 
+    verified_image_id = 753
+    locked_image_id = 749
+    burned_image_id = 751
+    called_image_id = 741
+    
+
     try:
         loop = asyncio.get_running_loop()
         loop.set_exception_handler(handle_exception)
 
         await clientTG.start()
         clientTG.parse_mode = CustomMarkdown()
-        d = await clientTG.get_input_entity("https://t.me/+k6XPgoum2QQ1ZWU8") #deployed
-        print(d)
-        t = await clientTG.get_input_entity("https://t.me/+8WG0VhMxLOFmY2Rk") #burned
-        print(t)
-        v = await clientTG.get_input_entity("https://t.me/+Jtx2Y2xV1VFhYWZk") #verified
-        print(v)
-        l = await clientTG.get_input_entity("https://t.me/+Ms9zqVwjRVowMzU0") #longlock
-        print(l)
-        c = await clientTG.get_input_entity("https://t.me/EOTgroupedcalls") #longlock
-        print(c)
+        if cached_media[0] is None:
+            d = await clientTG.get_input_entity("https://t.me/+k6XPgoum2QQ1ZWU8") #deployed
+            print(d)
+            t = await clientTG.get_input_entity("https://t.me/+8WG0VhMxLOFmY2Rk") #burned
+            print(t)
+            v = await clientTG.get_input_entity("https://t.me/+Jtx2Y2xV1VFhYWZk") #verified
+            print(v)
+            l = await clientTG.get_input_entity("https://t.me/+Ms9zqVwjRVowMzU0") #longlock
+            print(l)
+            c = await clientTG.get_input_entity("https://t.me/EOTgroupedcalls") #longlock
+            print(c)
+            cached_media[0] = 1
+            await asyncio.sleep(1)
+
+        
+        if cached_media[4] is None:
+            print("called image not cached yet...")
+
+            message = await clientTG.get_messages(1962610706, ids=called_image_id)
+            cached_media[4] = message.media.photo
+
         #Start the message worker
         task = asyncio.create_task(message_worker())
         await task  # Ensure the task is awaited
