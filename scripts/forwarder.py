@@ -128,7 +128,7 @@ def extract_deployer_address(text):
     else:
         return None
 
-
+# function that gets an itoken message text and generates an address data
 def treatment_message_text(message_text, tokens):
     contract_address = caextractor.extract_contract_address(message_text)
 
@@ -301,11 +301,49 @@ def treatment_message_text(message_text, tokens):
 
         return message_text, contract_address
 
+##### IMAGES##### global cached media variable that stores the file with the images to use for all the posts
+cached_media = [None, None, None, None]
 
 
 #Main
 async def main():
+    global cached_media
+    # Get the message containing the image
+    deployed_image_id = 742 
+    verified_image_id = 753
+    locked_image_id = 749
+    burned_image_id = 751
+    called_image_id = 741
+
+
     async with TelegramClient("ubuntusession1", api_id, api_hash) as client:
+
+        #retrieving the image files if not cached
+        source_chat = 1962610706  # Replace with the chat or channel where the image is located
+        if cached_media[0] is None:
+            print("deployed image not cached yet...")
+            message = await client.get_messages(source_chat, ids=deployed_image_id)
+            cached_media[0] = message.media.photo
+
+        if cached_media[1] is None:
+            print("verified image not cached yet...")
+
+            message = await client.get_messages(source_chat, ids=verified_image_id)
+            cached_media[1] = message.media.photo
+        
+        if cached_media[2] is None:
+            print("locked image not cached yet...")
+
+            message = await client.get_messages(source_chat, ids=locked_image_id)
+            cached_media[2] = message.media.photo
+        
+        if cached_media[3] is None:
+            print("burned image not cached yet...")
+
+            message = await client.get_messages(source_chat, ids=burned_image_id)
+            cached_media[3] = message.media.photo
+
+        #listening to the events from the source channel telegram
         @client.on(events.NewMessage(chats=source_channel))
         async def my_event_handler(event):
             start = time.time()
@@ -418,7 +456,7 @@ async def main():
                         message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n  [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n "
                     
                     # Send the message and capture the returned Message object
-                    sent_message = await client.send_message(target_deployed, message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                    sent_message = await client.send_file(target_deployed, file=cached_media[0], caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                     # Now, you can access the message ID using sent_message.id
                     message_id = sent_message.id
@@ -656,7 +694,7 @@ async def main():
 
                     
 
-                    sent_message = await client.send_message(target_verified, message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                    sent_message = await client.send_file(target_verified, file= cached_media[1] , caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
                     print(f"\n telegram verified forwarder finished in: {round(time.time() - start, 2)} seconds \n")
 
                     # Now, you can access the message ID using sent_message.id
@@ -701,7 +739,7 @@ async def main():
                 
                 message_text, contract_address = treatment_message_text(message_text, tokens)    
 
-                sent_message = await client.send_message(target_burn, message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                sent_message = await client.send_file(target_burn, file = cached_media[3] , caption= message_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                 # Now, you can access the message ID using sent_message.id
                 message_id = sent_message.id
@@ -737,7 +775,7 @@ async def main():
                 
                     message_text, contract_address = treatment_message_text(message_text, tokens)
 
-                    sent_message = await client.send_message(target_longlock, message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                    sent_message = await client.send_file(target_longlock, file = cached_media[2] , caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                     # Now, you can access the message ID using sent_message.id
                     message_id = sent_message.id
