@@ -645,8 +645,15 @@ async def handle_message(event):
 
                     if burn_message_id is not None:
                         call_text = burn_message + channels_text
+                        try:
+                            sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        except Exception as e:
+                            message = await clientTG.get_messages(1962610706, ids=741)
+                            cached_media[4] = message.media.photo
+                            sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+
                         
-                        sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+
                         call_message_id = sentcall_message.id
                         call_timestamp_utc = sentcall_message.date
                         
@@ -674,7 +681,13 @@ async def handle_message(event):
                     elif lock_message_id is not None:
                         call_text = lock_message + channels_text
                         
-                        sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        try:
+                            sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        except Exception as e:
+                            message = await clientTG.get_messages(1962610706, ids=741)
+                            cached_media[4] = message.media.photo
+                            sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+
                         call_message_id = sentcall_message.id
                         call_timestamp_utc = sentcall_message.date
                         
@@ -702,7 +715,13 @@ async def handle_message(event):
                     elif verified_message_id is not None:
                         call_text = verified_message + channels_text
                         
-                        sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        try:
+                            sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        except Exception as e:
+                            message = await clientTG.get_messages(1962610706, ids=741)
+                            cached_media[4] = message.media.photo
+                            sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+
                         call_message_id = sentcall_message.id
                         call_timestamp_utc = sentcall_message.date
                         
@@ -730,7 +749,15 @@ async def handle_message(event):
                     elif deployed_message_id is not None:
                         call_text = deployed_message + channels_text
                     
-                        sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        
+                        try:
+                            sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+                        except Exception as e:
+                            message = await clientTG.get_messages(1962610706, ids=741)
+                            cached_media[4] = message.media.photo
+                            sentcall_message = await clientTG.send_file(target_call, file = cached_media[4],caption = call_text, link_preview=False, parse_mode=CustomMarkdown())
+
+
                         call_message_id = sentcall_message.id
                         call_timestamp_utc = sentcall_message.date
                         

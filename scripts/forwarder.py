@@ -122,11 +122,19 @@ def remove_excess_text(text):
 
 #extracts the deployer address from the itoken messages
 def extract_deployer_address(text):
-    match = re.search(r"\[Deployer\]\(https://etherscan.io/address/(.*?)\)", text)
+
+    cleaned_text = re.sub(r"[^a-zA-Z0-9\s:]", "", text)
+    print(cleaned_text)
+    contract_address = None
+    pattern = r"(?i)Deployerhttps:etherscanioaddress\s*(0x[a-fA-F0-9]{40})"
+    match = re.search(pattern, cleaned_text)
+
     if match:
-        return match.group(1)
-    else:
-        return None
+        contract_address = match.group(1)
+        # web3 = Web3(Web3.HTTPProvider(f'https://mainnet.infura.io/v3/{INFURA_API_KEY}'))
+        # checksum_address = web3.to_checksum_address(contract_address)
+
+    return contract_address
 
 # function that gets an itoken message text and generates an address data
 def treatment_message_text(message_text, tokens):
@@ -455,8 +463,13 @@ async def main():
                     elif int(pastcoins[2]) > 0: #checks if no ath mcap data is available but there is a high tx past coin
                         message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n  [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n "
                     
-                    # Send the message and capture the returned Message object
-                    sent_message = await client.send_file(target_deployed, file=cached_media[0], caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                    try:
+                        # Send the message and capture the returned Message object
+                        sent_message = await client.send_file(target_deployed, file=cached_media[0], caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                    except Exception as e:
+                        messagex = await client.get_messages(source_chat, ids=deployed_image_id)
+                        cached_media[0] = messagex.media.photo
+                        sent_message = await client.send_file(target_deployed, file=cached_media[0], caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                     # Now, you can access the message ID using sent_message.id
                     message_id = sent_message.id
@@ -694,7 +707,13 @@ async def main():
 
                     
 
-                    sent_message = await client.send_file(target_verified, file= cached_media[1] , caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                    try:
+                        sent_message = await client.send_file(target_verified, file= cached_media[1] , caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                    except Exception as e:
+                        messagex = await client.get_messages(source_chat, ids=deployed_image_id)
+                        cached_media[1] = messagex.media.photo
+                        sent_message = await client.send_file(target_verified, file= cached_media[1] , caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
+
                     print(f"\n telegram verified forwarder finished in: {round(time.time() - start, 2)} seconds \n")
 
                     # Now, you can access the message ID using sent_message.id
@@ -739,7 +758,12 @@ async def main():
                 
                 message_text, contract_address = treatment_message_text(message_text, tokens)    
 
-                sent_message = await client.send_file(target_burn, file = cached_media[3] , caption= message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                try:
+                    sent_message = await client.send_file(target_burn, file = cached_media[3] , caption= message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                except Exception as e:
+                    messagex = await client.get_messages(source_chat, ids=deployed_image_id)
+                    cached_media[3] = messagex.media.photo
+                    sent_message = await client.send_file(target_burn, file = cached_media[3] , caption= message_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                 # Now, you can access the message ID using sent_message.id
                 message_id = sent_message.id
@@ -775,7 +799,12 @@ async def main():
                 
                     message_text, contract_address = treatment_message_text(message_text, tokens)
 
-                    sent_message = await client.send_file(target_longlock, file = cached_media[2] , caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                    try:
+                        sent_message = await client.send_file(target_longlock, file = cached_media[2] , caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
+                    except Exception as e:
+                        messagex = await client.get_messages(source_chat, ids=deployed_image_id)
+                        cached_media[2] = messagex.media.photo
+                        sent_message = await client.send_file(target_longlock, file = cached_media[2] , caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
 
                     # Now, you can access the message ID using sent_message.id
                     message_id = sent_message.id

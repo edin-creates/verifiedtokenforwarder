@@ -474,6 +474,153 @@ def get_pair(contract_address):
 
     return pair_address
 
+
+################################################
+############# GET PRICE V2 OR V3 ###############
+################################################
+
+def get_fee_tier_for_pool(token_address):
+    UNISWAP_V3_FACTORY_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984'  # Uniswap V3 Factory address
+    UNISWAP_V3_FACTORY_ABI = [
+        {"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"uint24","name":"","type":"uint24"}],"name":"getPool","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
+        ]  # ABI for the Uniswap V3 Factory contract
+    web3 = Web3(Web3.HTTPProvider(f'https://mainnet.infura.io/v3/{INFURA_API_KEY}'))
+    weth_address='0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'   # WETH address
+    
+    token_address=Web3.to_checksum_address(token_address)          #proper format of the token address
+    factory_contract = web3.eth.contract(address=UNISWAP_V3_FACTORY_ADDRESS, abi=UNISWAP_V3_FACTORY_ABI)
+    
+    fee_tiers = [500, 3000, 10000]
+    pools = {}
+    #grouping fees and pair addresses for the pools existing
+    for fee in fee_tiers:
+        pool_address = factory_contract.functions.getPool(token_address, weth_address, fee).call()
+        if pool_address != '0x0000000000000000000000000000000000000000':
+            pools[fee]= pool_address   #returns the first fee for an existing V3 pool for the token
+
+    if len(pools) > 1:
+
+        #keeping the one with the most liquidity
+        web3 = Web3(Web3.HTTPProvider(f'https://mainnet.infura.io/v3/{INFURA_API_KEY}'))
+        slot0_abi = [
+        {
+            "constant": True,
+            "inputs": [],
+            "name": "slot0",
+            "outputs": [
+                {"name": "sqrtPriceX96", "type": "uint160"},
+                {"name": "tick", "type": "int24"},
+                {"name": "observationIndex", "type": "uint16"},
+                {"name": "observationCardinality", "type": "uint16"},
+                {"name": "observationCardinalityNext", "type": "uint16"},
+                {"name": "feeProtocol", "type": "uint8"},
+                {"name": "unlocked", "type": "bool"}
+            ],
+            "payable": False,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": True,
+            "inputs": [],
+            "name": "token0",
+            "outputs": [{"name": "", "type": "address"}],
+            "payable": False,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "token1",
+            "outputs": [{"internalType":"address","name":"","type":"address"}],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs":[],
+            "name":"liquidity",
+            "outputs":[{"internalType":"uint128","name":"","type":"uint128"}],
+            "stateMutability":"view",
+            "type":"function"
+        }
+        ]
+        max_liquidity = 0
+        max_pair = None
+        for fee, pair in pools.items():
+            pool_contract = web3.eth.contract(address = pair, abi = slot0_abi)
+            liquidity = pool_contract.functions.liquidity().call()
+            if liquidity > max_liquidity:
+                max_liquidity = liquidity
+                max_pair = fee, pair    
+        return max_pair
+    
+    elif len(pools) == 1:
+        fee, pair = list(pools.items())[0]
+        return fee, pair
+    else:
+        return None, None
+
+
+
+#Function that gets the price in ethereum for a token with liquidity in uniswap V3
+def get_price_eth_v3(token_address):
+    
+    start = time.time()
+    fee, pool_address = get_fee_tier_for_pool(token_address)
+    web3 = Web3(Web3.HTTPProvider(f'https://mainnet.infura.io/v3/{INFURA_API_KEY}'))
+    slot0_abi = [
+    {
+        "constant": True,
+        "inputs": [],
+        "name": "slot0",
+        "outputs": [
+            {"name": "sqrtPriceX96", "type": "uint160"},
+            {"name": "tick", "type": "int24"},
+            {"name": "observationIndex", "type": "uint16"},
+            {"name": "observationCardinality", "type": "uint16"},
+            {"name": "observationCardinalityNext", "type": "uint16"},
+            {"name": "feeProtocol", "type": "uint8"},
+            {"name": "unlocked", "type": "bool"}
+        ],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": True,
+        "inputs": [],
+        "name": "token0",
+        "outputs": [{"name": "", "type": "address"}],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "token1",
+        "outputs": [{"internalType":"address","name":"","type":"address"}],
+        "stateMutability": "view",
+        "type": "function"
+    }
+    ]
+ 
+    weth_address='0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+    pool_contract = web3.eth.contract(address = pool_address, abi = slot0_abi)
+    sqrtpricex96 = pool_contract.functions.slot0().call()
+    
+    #checking wether WETH is token1 or token0
+    token1 = pool_contract.functions.token1().call()
+    if token1.lower() == weth_address.lower():
+        price = (sqrtpricex96[0] / 2 ** 96) ** 2
+        print(price)
+    else:
+        price = (2 ** 96 / sqrtpricex96[0]) ** 2
+        print(price)
+    print(f"it took {round(time.time()-start, 2)} seconds")
+
+    return price
+
+
 #get token price INFURA
 def get_price(contract_address):
     web3 = Web3(Web3.HTTPProvider(f'https://mainnet.infura.io/v3/{INFURA_API_KEY}'))
@@ -504,85 +651,97 @@ def get_price(contract_address):
         print(f"error retrieving total supply and/or decimals not an ERC20 token")
         return None
 
-    # Get the pair address using the get_pair function
-    pair_address = get_pair(contract_address)
-    abi = [
-        {
-            "constant": True,
-            "inputs": [],
-            "name": "token0",
-            "outputs": [{"name": "", "type": "address"}],
-            "payable": False,
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "constant": True,
-            "inputs": [],
-            "name": "token1",
-            "outputs": [{"name": "", "type": "address"}],
-            "payable": False,
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "constant": True,
-            "inputs": [],
-            "name": "getReserves",
-            "outputs": [{"name": "_reserve0", "type": "uint112"}, {"name": "_reserve1", "type": "uint112"}, {"name": "_blockTimestampLast", "type": "uint32"}],
-            "payable": False,
-            "stateMutability": "view",
-            "type": "function"
-        },
-        
-    ]
-    contract = web3.eth.contract(address=pair_address, abi=abi)
     try:
+        # Get the pair address using the get_pair function
+        pair_address = get_pair(contract_address)
+        abi = [
+            {
+                "constant": True,
+                "inputs": [],
+                "name": "token0",
+                "outputs": [{"name": "", "type": "address"}],
+                "payable": False,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": True,
+                "inputs": [],
+                "name": "token1",
+                "outputs": [{"name": "", "type": "address"}],
+                "payable": False,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": True,
+                "inputs": [],
+                "name": "getReserves",
+                "outputs": [{"name": "_reserve0", "type": "uint112"}, {"name": "_reserve1", "type": "uint112"}, {"name": "_blockTimestampLast", "type": "uint32"}],
+                "payable": False,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            
+        ]
+        contract = web3.eth.contract(address=pair_address, abi=abi)
         token0_address = contract.functions.token0().call()
-        token1_address = contract.functions.token1().call()
+        token1_address = contract.functions.token1().call() 
+        eth_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+
+        if token0_address.lower() == eth_address.lower():
+            reserves = contract.functions.getReserves().call()
+            reserve0 = reserves[0]
+            reserve1 = reserves[1]
+            eth_price = get_ethereum_price()
+            token_price_eth = token_price = (reserve0 / reserve1) * (10**(decimals - 18))
+            token_price = (reserve0 / reserve1) * (10**(decimals - 18)) * eth_price
+            liquidity_temporary = ( reserve0 / 10**18 ) * eth_price
+            liquidity = smart_format_number(liquidity_temporary)
+        elif token1_address.lower() == eth_address.lower():
+            reserves = contract.functions.getReserves().call()
+            reserve0 = reserves[0]
+            reserve1 = reserves[1]
+            eth_price = get_ethereum_price()
+            token_price_eth = (reserve1 / reserve0) * (10**(decimals - 18))
+            token_price = (reserve1 / reserve0) * (10**(decimals - 18)) * eth_price
+            liquidity_temporary = ( reserve1 / 10**18 ) * eth_price
+            liquidity = smart_format_number(liquidity_temporary)
+        else:
+            raise ValueError("ETH token not found in the pair")
+        if liquidity_temporary < 300: #if lp is lower than 300$, even up to 1 eth/ 1530$ would be acceptable
+            raise ValueError("Weak lp check v3 for better results")
+        else:
+            return token_price, liquidity, token_price_eth
+        
     except Exception as e:
-        print(f'Error retrieving token addresses: {str(e)}')
-        return None, None
+        try:
+            price_in_eth = get_price_eth_v3(contract_address)
+            eth_price = get_ethereum_price()
+            token_price = price_in_eth * eth_price
+            return token_price, None, price_in_eth
+        except Exception as e:
+            raise ValueError("Both V2 and V3 uniswap pool checks failed, the erc20 token may have lp in another DEX")
 
-    eth_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
-    if token0_address.lower() == eth_address.lower():
-        reserves = contract.functions.getReserves().call()
-        reserve0 = reserves[0]
-        reserve1 = reserves[1]
-        eth_price = get_ethereum_price()
-        token_price = (reserve0 / reserve1) * (10**(decimals - 18)) * eth_price
-        liquidity_temporary = ( reserve0 / 10**18 ) * eth_price
-        liquidity = smart_format_number(liquidity_temporary)
-    elif token1_address.lower() == eth_address.lower():
-        reserves = contract.functions.getReserves().call()
-        reserve0 = reserves[0]
-        reserve1 = reserves[1]
-        eth_price = get_ethereum_price()
-        token_price = (reserve1 / reserve0) * (10**(decimals - 18)) * eth_price
-        liquidity_temporary = ( reserve1 / 10**18 ) * eth_price
-        liquidity = smart_format_number(liquidity_temporary)
-    else:
-        raise ValueError("ETH token not found in the pair")
 
-    return token_price, liquidity
-
-#Calculates the marketcap of a token
+#Calculates the marketcap of a token uses the infura api only
 def get_marketcap(contract_address):
     start = time.time()
     try:
-        price, liquidity = get_price(contract_address)
+        price, liquidity, price_eth = get_price(contract_address)
         tsupply, decimals = get_total_supply(contract_address)
         supply = int(tsupply.replace(',', ''))
         tmcap = price * supply
         mcap = smart_format_number(int(tmcap))
     except Exception as e:
         print(f"no lp or/and not an erc20 token")
-        return None, None
+        return None, None, None
     
     print(f"\n get_marketcap finished after {round(time.time() - start, 2)} seconds \n")
 
-    return mcap, liquidity
+    return mcap, liquidity, price_eth
+
 
 #ETH PRICE IN USD using coingecko API
 def get_ethereum_price():
