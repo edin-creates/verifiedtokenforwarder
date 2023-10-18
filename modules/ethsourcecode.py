@@ -181,7 +181,7 @@ def get_socialmedia_filter(contract_address, api_key, proxy, header):
         text_with_spaces = add_spaces_around_urls(text)
 
         urls = extractor.find_urls(text_with_spaces)
-        blacklist = ['github.com', 'stackexchange.com', 'buyfee.marketing', 'sellfee.marketing','soliditylang.org','metamask.io','eth.wiki','github.io','ethers.io','www.smartcontracts.tools' ,'hardhat.org','msg.data','zeppelin.solutions', 'openzeppelin.com', 'readthedocs.io', 'ethereum.org', 'consensys.net', 'Etherscan.io', 'sellTaxes.dev', 'BscScan.com', 'wikipedia.org']
+        blacklist = [ 'welaunchit.org', 'tokeninfo.name' , 'github.com', 'stackexchange.com', 'buyfee.marketing', 'sellfee.marketing','soliditylang.org','metamask.io','eth.wiki','github.io','ethers.io','www.smartcontracts.tools' ,'hardhat.org','msg.data','zeppelin.solutions', 'openzeppelin.com', 'readthedocs.io', 'ethereum.org', 'consensys.net', 'Etherscan.io', 'sellTaxes.dev', 'BscScan.com', 'wikipedia.org']
         filtered_urls = set(url for url in urls if not any(black_domain.lower() in url.lower() for black_domain in blacklist))
         
         

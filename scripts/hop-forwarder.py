@@ -92,6 +92,7 @@ target_verified = int(os.environ['TARGET_CHANNEL_VERIFIED'])
 target_deployed = int(os.environ['TARGET_CHANNEL_DEPLOYED'])
 target_longlock = int(os.environ['TARGET_CHANNEL_LONGLOCKS'])
 target_burn = int(os.environ['TARGET_CHANNEL_BURN'])
+target_call = int(os.environ['TARGET_CHANNEL_CALL'])
 
 mongodbusername = os.environ['mongodbUsername']
 mongodbpassword = os.environ['mongodbPassword']
@@ -181,7 +182,7 @@ async def main():
 
 
             #freshly deployed tokens #####################################################################################
-            if "Deployed" in message_text and "🛑" not in message_text:
+            if "Deployed" in message_text :
                 logger.info("Found a verified contract message")
                 contract_address = caextractor.extract_contract_address(message_text)
                 if contract_address:
@@ -323,6 +324,25 @@ async def main():
                         burn_message_id = burned_event.get("message_id", None)
                         burn_message = burned_event.get("message_text", None)
                         
+                        #We treat an edge case here where itoken missed posting a token that was suddently called, we would need to update the message text of the called event in the database mongodb
+                        if "call-deployed" in message_text:
+                            #we modify the message_text for the called event to include the hop analysis it will be updated once another caller calls the same token and show up in the call telegram channel
+                            called_event = token_data.get("events", {}).get("called", {})
+                            called_message = called_event.get("message_text", None)
+                            new_message = called_message + hop_message
+
+                            filter_ = {"_id": {"$regex": f"^{contract_address}$", "$options": 'i'}}
+                            update_ = {
+                                        "$set": {
+                                            "events.called.message_text": new_message
+                                        }
+                                    }
+
+                            # Use upsert=True to insert if not exists, or update if exists
+                            tokens.update_one(filter_, update_, upsert=False)
+                        
+
+
                         #After finishing the analysis we edit the already posted messages with the contract address as a key
                         if deployed_message_id is not None:
                             if hop_message != "":
