@@ -590,7 +590,7 @@ async def handle_message(event):
             if not result.modified_count:
                 result = channels.update_one(
                     {"_id": actual_chat_id},
-                    {"$set": {f"{field_path}": [{"call_message": message_text, "marketcap": number_marketcap, "liquidity": number_liquidity, "date": timestamp_utc}]}}
+                    {"$set": {f"{field_path}": [{"call_message": message_text, "marketcap": number_marketcap, "liquidity": number_liquidity,"token_price_in_eth": token_price_in_eth, "date": timestamp_utc}]}}
                 )
 
             ############################################################################################
