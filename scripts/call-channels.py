@@ -928,83 +928,83 @@ async def handle_message(event):
                 # wait for all the send_message tasks to complete
                 await asyncio.gather(*send_tasks)
 
-            else:
-                generated_message, deployer_age, deployer_address, balance_eth, deployer_name, cexfunded, pastcoins = await generate_nicetext_from_contract_address(token_address)
-                ####We constructed the meat f the text from the token address
-                if deployer_age is None:
-                    pass
-                else:
-                    call_channel_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🔊](emoji/5823192186916704073)**Called **`1 time`  **by** `1 Channels`**:** \n[🔽](emoji/5820990556616004290)\n"
+            # else:
+            #     generated_message, deployer_age, deployer_address, balance_eth, deployer_name, cexfunded, pastcoins = await generate_nicetext_from_contract_address(token_address)
+            #     ####We constructed the meat f the text from the token address
+            #     if deployer_age is None:
+            #         pass
+            #     else:
+            #         call_channel_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🔊](emoji/5823192186916704073)**Called **`1 time`  **by** `1 Channels`**:** \n[🔽](emoji/5820990556616004290)\n"
 
-                    call_channel_url = f"https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}"
-                    call_channel_name = f"{chat_id_to_name[actual_chat_id]}"
-                    timestamp = datetime.utcnow()
-                    if number_marketcap is None:
-                        call_channel_text += f"  [▶️](emoji/5816812219156927426) [@{call_channel_name}]({call_channel_url})  [▶️](emoji/5827885422235095225)  __{timestamp}__\n "
-                    else:
-                        smart_mc =ethsourcecode.smart_format_number(number_marketcap)
-                        call_channel_text += f"  [▶️](emoji/5816812219156927426) [@{call_channel_name}]({call_channel_url})  [▶️](emoji/5827885422235095225)  [💲](emoji/5816854146627671089)**Mc: {smart_mc}**  [▶️](emoji/5827885422235095225)  __{timestamp}__\n "
-                    final_message = generated_message + call_channel_text
-                    try:
-                        sent_message1 = await clientTG.send_file(target_call, file = cached_media[4],caption =final_message, link_preview=False, parse_mode=CustomMarkdown())
-                        sent_message2 = await clientTG.send_file(target_deployed, file = cached_media[4],caption = final_message, link_preview=False, parse_mode=CustomMarkdown())
-                    except Exception as e:
-                        message = await clientTG.get_messages(1962610706, ids=741)
-                        cached_media[4] = message.media.photo
-                        sent_message1 = await clientTG.send_file(target_call, file = cached_media[4],caption = final_message, link_preview=False, parse_mode=CustomMarkdown())
-                        sent_message2 = await clientTG.send_file(target_deployed, file = cached_media[4],caption = final_message, link_preview=False, parse_mode=CustomMarkdown())
+            #         call_channel_url = f"https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}"
+            #         call_channel_name = f"{chat_id_to_name[actual_chat_id]}"
+            #         timestamp = datetime.utcnow()
+            #         if number_marketcap is None:
+            #             call_channel_text += f"  [▶️](emoji/5816812219156927426) [@{call_channel_name}]({call_channel_url})  [▶️](emoji/5827885422235095225)  __{timestamp}__\n "
+            #         else:
+            #             smart_mc =ethsourcecode.smart_format_number(number_marketcap)
+            #             call_channel_text += f"  [▶️](emoji/5816812219156927426) [@{call_channel_name}]({call_channel_url})  [▶️](emoji/5827885422235095225)  [💲](emoji/5816854146627671089)**Mc: {smart_mc}**  [▶️](emoji/5827885422235095225)  __{timestamp}__\n "
+            #         final_message = generated_message + call_channel_text
+            #         try:
+            #             sent_message1 = await clientTG.send_file(target_call, file = cached_media[4],caption =final_message, link_preview=False, parse_mode=CustomMarkdown())
+            #             sent_message2 = await clientTG.send_file(target_deployed, file = cached_media[4],caption = final_message, link_preview=False, parse_mode=CustomMarkdown())
+            #         except Exception as e:
+            #             message = await clientTG.get_messages(1962610706, ids=741)
+            #             cached_media[4] = message.media.photo
+            #             sent_message1 = await clientTG.send_file(target_call, file = cached_media[4],caption = final_message, link_preview=False, parse_mode=CustomMarkdown())
+            #             sent_message2 = await clientTG.send_file(target_deployed, file = cached_media[4],caption = final_message, link_preview=False, parse_mode=CustomMarkdown())
 
-                    # Now, you can access the message ID using sent_message.id
-                    message_id = sent_message2.id
-                    call_message_id = sent_message1.id
-                    timestamp_utc = sent_message2.date
+            #         # Now, you can access the message ID using sent_message.id
+            #         message_id = sent_message2.id
+            #         call_message_id = sent_message1.id
+            #         timestamp_utc = sent_message2.date
 
-                    # Define the filter and the update
+            #         # Define the filter and the update
                     
-                    filter_ = {"_id": token_address.lower()}
-                    update_ = {
-                        "$set": {
-                            "events.deployed": {
-                                "timestamp": timestamp_utc,
-                                "message_id": message_id,
-                                "message_text": final_message
-                            },
-                            "events.called": {
-                                        "timestamp": timestamp_utc,
-                                        "message_id": call_message_id,
-                                        "message_text": generated_message,
-                                        "caller_username": call_channel_name ,
-                                        #"called_telegram_id": actual_chat_id,
-                                        "call_url": call_channel_url ,
-                                        "earliest_marketcap": number_marketcap
-                                    },
-                            "deployer_address": deployer_address,
-                            "deployer_age": deployer_age,
-                            "deployer_balance": None,
-                            "deployer_name": deployer_name,
-                            "cexfunded": cexfunded,
-                            "pastcoin_data": pastcoins,
-                            "hop_message": None,
-                            "hop_analysis": None
-                        },
-                        "$push": {
-                        "channels": {
-                        "channel_name": f"{chat_id_to_name[actual_chat_id]}",
-                        "channel_id": actual_chat_id,
-                        "timestamp": timestamp_utc,
-                        "marketcap": number_marketcap,
-                        "liquidity": number_liquidity,
-                        "token_price_in_eth": token_price_in_eth,
-                        "channel_post": f"{message_text}",
-                        "channel_post_url": f"https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}"
-                            }
-                        }
-                    }
+            #         filter_ = {"_id": token_address.lower()}
+            #         update_ = {
+            #             "$set": {
+            #                 "events.deployed": {
+            #                     "timestamp": timestamp_utc,
+            #                     "message_id": message_id,
+            #                     "message_text": final_message
+            #                 },
+            #                 "events.called": {
+            #                             "timestamp": timestamp_utc,
+            #                             "message_id": call_message_id,
+            #                             "message_text": generated_message,
+            #                             "caller_username": call_channel_name ,
+            #                             #"called_telegram_id": actual_chat_id,
+            #                             "call_url": call_channel_url ,
+            #                             "earliest_marketcap": number_marketcap
+            #                         },
+            #                 "deployer_address": deployer_address,
+            #                 "deployer_age": deployer_age,
+            #                 "deployer_balance": None,
+            #                 "deployer_name": deployer_name,
+            #                 "cexfunded": cexfunded,
+            #                 "pastcoin_data": pastcoins,
+            #                 "hop_message": None,
+            #                 "hop_analysis": None
+            #             },
+            #             "$push": {
+            #             "channels": {
+            #             "channel_name": f"{chat_id_to_name[actual_chat_id]}",
+            #             "channel_id": actual_chat_id,
+            #             "timestamp": timestamp_utc,
+            #             "marketcap": number_marketcap,
+            #             "liquidity": number_liquidity,
+            #             "token_price_in_eth": token_price_in_eth,
+            #             "channel_post": f"{message_text}",
+            #             "channel_post_url": f"https://t.me/{chat_id_to_name[actual_chat_id]}/{message_id}"
+            #                 }
+            #             }
+            #         }
 
-                    # Use upsert=True to insert if not exists, or update if exists
-                    tokens.update_one(filter_, update_, upsert=True)
+            #         # Use upsert=True to insert if not exists, or update if exists
+            #         tokens.update_one(filter_, update_, upsert=True)
 
-                    logger.info("Forwarded message to target channel")
+            #         logger.info("Forwarded message to target channel")
 
                 
     
