@@ -546,6 +546,7 @@ async def handle_message(event):
             print(f"\n ----------------- \n\n **Found token address:** {token_address} in {chat_id_to_name[actual_chat_id]}")
             number_marketcap = None
             number_liquidity = None
+            token_price_in_usd = None
             try:
                 marketcap, liquidity, token_price_in_eth = ethsourcecode.get_marketcap(token_address)
                 token_price_in_usd = ethsourcecode.get_ethereum_price() * token_price_in_eth
