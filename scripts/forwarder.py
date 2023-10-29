@@ -282,20 +282,20 @@ def treatment_message_text(message_text, tokens):
         message_text += f"\n\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[▶️](emoji/5816812219156927426)  [📈](emoji/5823242158861193696) **Marketcap:**  `{mcap}`\n[▶️](emoji/5816812219156927426) [💧](emoji/5823394089034322747) **Liquidity:**  `{liquidity}`\n"
 
         if social_media_text.strip(): 
-            message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n [🔽](emoji/5820990556616004290)\n{social_media_text}"
+            message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n {social_media_text}"
         ##############################################################
 
-        message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n[🔽](emoji/5820990556616004290)\n"
+        message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n"
         if deployer_name is not None:
-            message_text += f"  [▶️](emoji/5816812219156927426)  ⚡️ **Nametag:**  `{deployer_name}`\n"
+            message_text += f"      [▶️](emoji/5816812219156927426)  ⚡️ **Nametag:**  `{deployer_name}`\n"
         
         if len(cexfunded)>0 :
-            message_text += f"  [▶️](emoji/5816812219156927426) [🔹](emoji/5816477795823392378) **Cex:** `{cexfunded}`\n"
+            message_text += f"      [▶️](emoji/5816812219156927426) [🔹](emoji/5816477795823392378) **Cex:** `{cexfunded}`\n"
 
         if balance_eth is not None:
-            message_text += f"  [▶️](emoji/5816812219156927426)  [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
+            message_text += f"      [▶️](emoji/5816812219156927426)  [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n      [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
         else:
-            message_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
+            message_text += f"      [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n      [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
         from modules import asynciohopanalysis
         if number_lpremove is not None:
             if number_lpremove > 0 :
@@ -303,9 +303,9 @@ def treatment_message_text(message_text, tokens):
                 message_text += f"  [▶️](emoji/5816812219156927426)  🛑 **liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) {result_lpremove} \n"
 
         if int(pastcoins[1]) != 0:
-            message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN**`(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n  [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308) ** Ca:** `{pastcoins[0]}` \n  [▶️](emoji/5816812219156927426) 🎯 **ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
+            message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN**`(out of {contracts_deployed_count})`\n       [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n       [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n      [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308) ** Ca:** `{pastcoins[0]}` \n     [▶️](emoji/5816812219156927426) 🎯 **ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
         elif int(pastcoins[2]) > 0: #checks if no ath mcap data is available but there is a high tx past coin
-                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n  [▶️](emoji/5816812219156927426) ** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308)** Ca:** `{pastcoins[0]}` \n "
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n      [▶️](emoji/5816812219156927426) ** Name:** `{past_name}` \n      [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n      [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308)** Ca:** `{pastcoins[0]}` \n "
 
         return message_text, contract_address
 
@@ -356,15 +356,13 @@ async def main():
         async def my_event_handler(event):
             start = time.time()
             message = event.message
-            message_text = "[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609) \n[🔹](emoji/5816477795823392378)    [👀](emoji/5821304900977431720) [👀](emoji/5821085969314484627) [👀](emoji/5823641711078805707)    [🔹](emoji/5816477795823392378)  \n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n\n\n"+message.text
+            message_text = " \n[🔹](emoji/5816477795823392378)  [👀](emoji/5821304900977431720) [👀](emoji/5821085969314484627) [👀](emoji/5823641711078805707)  [🔹](emoji/5816477795823392378)  \n"+message.text
             logger.info(f"message text: {message_text}")
             client.parse_mode = CustomMarkdown()
             #freshly deployed tokens #####################################################################################
             if "Deployed" in message_text: # and "🛑" not in message_text:
+                
                 logger.info("Found a verified contract message")
-
-
-
                 print("Indexes created successfully!")
                 contract_address = caextractor.extract_contract_address(message_text)
 
@@ -438,30 +436,30 @@ async def main():
                     #message_text += f"---------------------------------\n** ⟹💲 Marketcap:**  `{mcap}`\n** ⟹💰 Liquidity:**  `{liquidity}`\n"
 
                     if social_media_text.strip(): 
-                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n [🔽](emoji/5820990556616004290)\n{social_media_text}"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n       {social_media_text}"
                     ##############################################################
 
-                    message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n[🔽](emoji/5820990556616004290)\n"
+                    message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n"
                     if deployer_name is not None:
-                        message_text += f"  [▶️](emoji/5816812219156927426) ** ⚡️ Nametag:**  `{deployer_name}`\n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) ** ⚡️ Nametag:**  `{deployer_name}`\n"
                     
                     if len(cexfunded)>0 :
-                        message_text += f"  [▶️](emoji/5816812219156927426) [🔹](emoji/5816477795823392378) **Cex:** `{cexfunded}`\n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) [🔹](emoji/5816477795823392378) **Cex:** `{cexfunded}`\n"
                     if balance_eth is not None:
-                        message_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n        [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
                     else:
-                        message_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n      [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
 
 
                     if number_lpremove is not None:
                         if number_lpremove > 0 :
                             result_lpremove = asynciohopanalysis.process_shorten_and_link_element(tx_lpremove)
-                            message_text += f"  [▶️](emoji/5816812219156927426) **  🛑 liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) {result_lpremove} \n"
+                            message_text += f"      [▶️](emoji/5816812219156927426) **  🛑 liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) {result_lpremove} \n"
                     
                     if pastcoins[1] != 0: #checks if one ath Mcap past ca at least exists
-                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n   [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308)** Ca:** `{pastcoins[0]}` \n  [▶️](emoji/5816812219156927426)** 🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n      [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n       [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n      [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308)** Ca:** `{pastcoins[0]}` \n      [▶️](emoji/5816812219156927426)** 🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
                     elif int(pastcoins[2]) > 0: #checks if no ath mcap data is available but there is a high tx past coin
-                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n  [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n "
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n      [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n       [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n      [▶️](emoji/5816812219156927426)** Ca:** `{pastcoins[0]}` \n "
                     
                     try:
                         # Send the message and capture the returned Message object
@@ -677,10 +675,10 @@ async def main():
                     message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [▶️](emoji/5816812219156927426) [📈](emoji/5823242158861193696) **Marketcap:**  `{mcap}`\n [▶️](emoji/5816812219156927426) [💧](emoji/5823394089034322747) **Liquidity:**  `{liquidity}`\n"
 
                     if social_media_text.strip(): 
-                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n [🔽](emoji/5820990556616004290)\n{social_media_text}"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n       {social_media_text}"
                     ##############################################################
 
-                    message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n[🔽](emoji/5820990556616004290)\n"
+                    message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n"
                     if deployer_name is not None:
                         message_text += f"  [▶️](emoji/5816812219156927426) **⚡️ Nametag:**  `{deployer_name}`\n"
                     
@@ -694,12 +692,12 @@ async def main():
 
                     if number_lpremove is not None and number_lpremove>0 :
                         result_lpremove = asynciohopanalysis.process_shorten_and_link_element(tx_lpremove)
-                        message_text += f"  [▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n       [🔽](emoji/5820990556616004290) {result_lpremove} \n"
+                        message_text += f"  [▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n    {result_lpremove} \n"
                     
                     if pastcoins[1] != 0:
-                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426)**  Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308) **Ca:** `{pastcoins[0]}` \n  [▶️](emoji/5816812219156927426)** 🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n      [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n       [▶️](emoji/5816812219156927426)**  Symbol:** `{past_symbol}` \n      [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308) **Ca:** `{pastcoins[0]}` \n      [▶️](emoji/5816812219156927426)** 🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
                     elif int(pastcoins[2]) > 0:
-                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n  [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426)** Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308)**Ca:** `{pastcoins[0]}` \n "
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n      [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n       [▶️](emoji/5816812219156927426)** Symbol:** `{past_symbol}` \n       [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308)**Ca:** `{pastcoins[0]}` \n "
 
                     if hopanalysis is not None:
                         if hopanalysis != "":

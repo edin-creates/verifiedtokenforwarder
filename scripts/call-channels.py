@@ -495,10 +495,10 @@ async def generate_nicetext_from_contract_address(token_address):
     message_text += f"\n\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[▶️](emoji/5816812219156927426)  [📈](emoji/5823242158861193696) **Marketcap:**  `{mcap}`\n[▶️](emoji/5816812219156927426) [💧](emoji/5823394089034322747) **Liquidity:**  `{liquidity}`\n"
 
     if social_media_text.strip(): 
-        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n [🔽](emoji/5820990556616004290)\n{social_media_text}"
+        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n {social_media_text}"
     ##############################################################
 
-    message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n[🔽](emoji/5820990556616004290)\n"
+    message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n"
     if deployer_name is not None:
         message_text += f"  [▶️](emoji/5816812219156927426)  ⚡️ **Nametag:**  `{deployer_name}`\n"
     
@@ -516,9 +516,9 @@ async def generate_nicetext_from_contract_address(token_address):
             message_text += f"  [▶️](emoji/5816812219156927426)  🛑 **liq remove Txs** : `{number_lpremove}` \n     [▶️](emoji/5816812219156927426) {result_lpremove} \n"
 
     if int(pastcoins[1]) != 0:
-        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN**`(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n  [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308) ** Ca:** `{pastcoins[0]}` \n  [▶️](emoji/5816812219156927426) 🎯 **ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
+        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN**`(out of {contracts_deployed_count})`\n     [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308) ** Ca:** `{pastcoins[0]}` \n  [▶️](emoji/5816812219156927426) 🎯 **ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
     elif int(pastcoins[2]) > 0: #checks if no ath mcap data is available but there is a high tx past coin
-                    message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n   [🔽](emoji/5820990556616004290)\n  [▶️](emoji/5816812219156927426) ** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308)** Ca:** `{pastcoins[0]}` \n "
+                    message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n     [▶️](emoji/5816812219156927426) ** Name:** `{past_name}` \n  [▶️](emoji/5816812219156927426) ** Symbol:** `{past_symbol}` \n  [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308)** Ca:** `{pastcoins[0]}` \n "
 
     return message_text, deployer_age, deployer_address, balance_eth, deployer_name, cexfunded, pastcoins
 
@@ -631,7 +631,7 @@ async def handle_message(event):
                     total_calls = len(channels_events)
                     
                     # Edit the message in the target channel with new content
-                    channels_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🔊](emoji/5823192186916704073)**Called **`{total_calls} times`  **by** `{num_distinct_channels} Channels`**:** \n[🔽](emoji/5820990556616004290)\n"
+                    channels_text = f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🔊](emoji/5823192186916704073)**Called **`{total_calls} times`  **by** `{num_distinct_channels} Channels`**:** \n"
                     print(f"Called by {num_distinct_channels} call channels")
                     print(f"Total number of calls: {total_calls}")
                     
@@ -772,6 +772,15 @@ async def handle_message(event):
                         else:
                             deque_edit_message = await clientTG.send_message(target_call, response_text, reply_to=call_message_id, link_preview=False, parse_mode=CustomMarkdown())
 
+                            # Assuming recent_posts_deque has a size of 4 (full) we are going to delete the oldest post for better UI
+                            if len(recent_posts_deque) >= 4:
+                                oldest_element = recent_posts_deque[0]
+                                oldest_message_id = oldest_element['message_id']
+                                await clientTG.delete_messages(target_call, oldest_message_id)
+                                print(f"Deleted message with id: {oldest_message_id}" )
+                            else:
+                                print("The deque does not have enough elements nothing to delete here.")
+
                             # If token is not in recent posts, add to the deque and send a new message
                             recent_posts_deque.append({
                                 'token_address': token_address.lower(),
@@ -786,8 +795,7 @@ async def handle_message(event):
                     #in case this is the first call we need to form the latest message available to send as text + the first call data
                     # define the precall variable, since this is the first call (no call id yet) we need to identify if its a precall or not, using None mcap + the transaction count
                     precall = None
-                    txcount = ethsourcecode.get_txcount_etherscan(token_address, f"{ETHERSCAN_API_KEY3}", PROXY3, USER_AGENT1)
-                    if txcount < 10 or number_marketcap is None:
+                    if number_marketcap is None:
                         precall = 1
                     else:
                         precall = 0
