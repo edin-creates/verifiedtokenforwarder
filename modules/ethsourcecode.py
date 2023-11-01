@@ -63,6 +63,18 @@ logger = logging.getLogger(__name__)
 
 ############################################### CA Source code and url#############################################################
 
+from datetime import datetime, timezone
+
+#converts date strings into timestamp formats to use in api commands more freely
+def date_to_timestamp(date_str):
+    # Parse the date string into a datetime object
+    dt = datetime.fromisoformat(date_str)
+    
+    # Convert the datetime object to a timestamp
+    timestamp = dt.timestamp()
+    
+    return timestamp
+
 #source code etherscan url
 def get_etherscan_url(contract_address):
     return f"https://etherscan.io/address/{contract_address}#code"
@@ -158,6 +170,27 @@ def smart_parse_number(formatted_number):
     return result
 
 #function that retrives all the social media and organises it from a messy source code
+def check_website_extension(urls):
+    results = None
+    
+    for url in urls:
+        # Parse the URL
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc
+        
+        # Split domain to get the extension (last part after dot)
+        extension = domain.split('.')[-1]
+        
+        if extension == 'org':
+            results = 'org'
+        elif extension == 'io':
+            results = 'io'
+        elif extension == 'ai':
+            results = 'ai'
+    
+    return results
+
+#function that retrives all the social media and organises it from a messy source code
 def get_socialmedia_filter(contract_address, api_key, proxy, header):
     
     #telegram detection function
@@ -165,7 +198,7 @@ def get_socialmedia_filter(contract_address, api_key, proxy, header):
             if not urlparse(url).scheme:
                 url = "http://" + url
             parsed = urlparse(url)
-            return parsed.netloc.lower() == 't.me'
+            return parsed.netloc.lower() == 't.me' or parsed.netloc.lower() == 'telegram.me'
     
     #twitter detection function    
     def is_twitter_xcom(url):
@@ -186,26 +219,34 @@ def get_socialmedia_filter(contract_address, api_key, proxy, header):
         
         
         twitter_links = [url for url in filtered_urls if 'twitter.com' in url or is_twitter_xcom(url)]
-        discord_links = [url for url in filtered_urls if 'discord.com' in url]
+        discord_links = [url for url in filtered_urls if 'discord.com' in url.lower() or 'discord.gg' in url.lower()]
+        docs_links = [url for url in filtered_urls if 'gitbook.io' in url or 'docs.' in url or 'whitepaper' in url.lower()]
+        app_links = [url for url in filtered_urls if 'app.' in url.lower() or 'dapp.' in url.lower()]
         medium_links = [url for url in filtered_urls if 'medium.com' in url]
+        moar_links = [url for url in filtered_urls if 'youtube.com' in url.lower() or 'tiktok.com' in url.lower() or 'knowyourmeme.com' in url.lower() or 'google.com' in url.lower()]
         telegram_links = [url for url in filtered_urls if is_telegram(url)]
-        other_websites = [url for url in filtered_urls if url not in twitter_links + medium_links + telegram_links + discord_links]
+        other_websites = [url for url in filtered_urls if url not in twitter_links + medium_links + telegram_links + discord_links + docs_links + app_links + moar_links]
         triple_links = int(bool(telegram_links) and bool(twitter_links) and bool(other_websites))
 
 
         social_media_text = ""
-        if telegram_links is not None and telegram_links: social_media_text += f"   [▶️](emoji/5816812219156927426) [🔈](emoji/5816796735799824192) **Telegram :** {', '.join(telegram_links)} \n"
-        if twitter_links is not None and twitter_links: social_media_text += f"   [▶️](emoji/5816812219156927426) [🌐](emoji/5823584231531483516) **Twitter :** {', '.join(twitter_links)} \n"
-        if other_websites is not None and other_websites: social_media_text += f"   [▶️](emoji/5816812219156927426) [🌐](emoji/5823600071370871243) **website(s) :** {', '.join(other_websites)} \n"
-        if medium_links is not None and medium_links: social_media_text += f"   [▶️](emoji/5816812219156927426) **Medium :** {', '.join(medium_links)} \n"
-        if discord_links is not None and discord_links: social_media_text += f"   [▶️](emoji/5816812219156927426) **Discord :** {', '.join(discord_links)} \n"
+        if telegram_links is not None and telegram_links: social_media_text += f"      [▶️](emoji/5816812219156927426) [🔈](emoji/5816796735799824192) **Telegram :** {', '.join(telegram_links)} \n"
+        if twitter_links is not None and twitter_links: social_media_text += f"      [▶️](emoji/5816812219156927426) [🌐](emoji/5823584231531483516) **Twitter :** {', '.join(twitter_links)} \n"
+        if other_websites is not None and other_websites: social_media_text += f"      [▶️](emoji/5816812219156927426) [🌐](emoji/5823600071370871243) **website(s) :** {', '.join(other_websites)} \n"
+        if medium_links is not None and medium_links: social_media_text += f"      [▶️](emoji/5816812219156927426) **Medium :** {', '.join(medium_links)} \n"
+        if discord_links is not None and discord_links: social_media_text += f"      [▶️](emoji/5816812219156927426) **Discord :** {', '.join(discord_links)} \n"
+        if docs_links is not None and docs_links: social_media_text += f"      [▶️](emoji/5816812219156927426) **Docs :** {', '.join(docs_links)} \n"
+        if app_links is not None and app_links: social_media_text += f"      [▶️](emoji/5816812219156927426) **Dapp :** {', '.join(app_links)} \n"
+        if moar_links is not None and moar_links: social_media_text += f"      [▶️](emoji/5816812219156927426) **Moar :** {', '.join(moar_links)} \n"
 
         print(f"social media text {social_media_text}")
         
-        return telegram_links, twitter_links,discord_links, other_websites, medium_links, triple_links, social_media_text
+        return telegram_links, twitter_links,discord_links, other_websites, medium_links, docs_links, app_links, moar_links,triple_links, social_media_text
     
     except Exception as e:
         print(f"Error in get_socialmedia_filter: {e}")
+        return None, None, None, None, None, None, None, None, None, None
+
 ##########################################################################################################################
 
 
@@ -474,6 +515,35 @@ def get_pair(contract_address):
 
     return pair_address
 
+# Fetch token addresses the reverse of get_pair
+def get_tokens_from_pair(pair_address):
+    # Set up Web3 connection
+    infura_url = f'https://mainnet.infura.io/v3/{INFURA_API_KEY}'
+    w3 = Web3(Web3.HTTPProvider(infura_url))
+
+    # Uniswap/Sushiswap Pair ABI
+    pair_abi = [{
+        "constant": True,
+        "inputs": [],
+        "name": "token0",
+        "outputs": [{"name": "", "type": "address"}],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    }, {
+        "constant": True,
+        "inputs": [],
+        "name": "token1",
+        "outputs": [{"name": "", "type": "address"}],
+        "payable": False,
+        "stateMutability": "view",
+        "type": "function"
+    }]
+    pair_address = w3.to_checksum_address(pair_address)
+    pair_contract = w3.eth.contract(address=pair_address, abi=pair_abi)
+    token0_address = pair_contract.functions.token0().call()
+    token1_address = pair_contract.functions.token1().call()
+    return token0_address, token1_address
 
 ################################################
 ############# GET PRICE V2 OR V3 ###############

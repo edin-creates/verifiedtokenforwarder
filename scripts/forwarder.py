@@ -136,6 +136,51 @@ def extract_deployer_address(text):
 
     return contract_address
 
+def extract_token_metadata(message):
+    #extracts from an itoken post the token's metadata
+    pair = None, None
+    token_symbol = None
+    token_name = None
+    total_supply = None
+
+    #get the pair address if it exists
+    pair_address_pattern = r"(dexscreener\.com/ethereum/)(0x[a-fA-F0-9]{40})"
+    # Search for contract addresses directly attached to specific URLs
+    match_attached = re.search(pair_address_pattern, message)
+    if match_attached:
+        pair = (match_attached.group(2), pair[1])
+        print(f"Pair Address : {pair}")
+
+        
+    # Extracting the token name and symbol
+    token_match = re.search( r'\*\*\s*(?:Verified|Burned|Deployed|Locked):\s*\*\*\s+([^(]+)\s+\((.+?)\)', message)
+    if token_match:
+        token_symbol = token_match.group(1)
+        token_name = token_match.group(2)  # Assuming symbols are uppercase
+        print("Token Name:", token_name)
+        print("Token Symbol:", token_symbol)
+
+    # Extracting Uni version (Uni V2 or Uni V3)
+    uni_version_match = re.search(r'\*\*\s*Pair:\s*\*\* .*?(Uni V\d+)', message)
+    if uni_version_match:
+        uni_version = uni_version_match.group(1)
+        pair = (pair[0], uni_version)
+        print("Uni Version:", uni_version)
+    
+
+    # Extracting supply and decimals
+    supply_match = re.search(r'\*\*\s*Supply:\s*\*\* (.+?) \(\+(\d+) decimals\)', message)
+    if supply_match:
+        total_supply = supply_match.group(1)
+        total_supply = int(total_supply.replace(',', ''))
+        decimals = int(supply_match.group(2))
+        # message = re.sub(r'\*\*\s*Supply:\s*\*\* (.+?) \(\+(\d+) decimals\)', "", message)
+        print("Total Supply:", total_supply)
+        print("Decimals:", decimals)
+    return pair, token_name, token_symbol, total_supply, decimals
+    
+
+
 # function that gets an itoken message text and generates an address data
 def treatment_message_text(message_text, tokens):
     contract_address = caextractor.extract_contract_address(message_text)
@@ -217,7 +262,7 @@ def treatment_message_text(message_text, tokens):
             deployer_name = None
             mcap, liquidity = None, None
             cexfunded = None
-            telegram_links, twitter_links, discord_links, other_websites, medium_links, triple_links, social_media_text = None, None, None, None, None, None, None
+            telegram_links, twitter_links,discord_links, other_websites, medium_links, docs_links, app_links, moar_links,triple_links, social_media_text = None, None, None, None, None, None, None, None, None, None
             tx_lpremove, number_lpremove = None,  None
             # Wait for all tasks to complete
             for future in concurrent.futures.as_completed([task1_future, task2_future, task3_future, task4_future, task5_future]):
@@ -233,7 +278,7 @@ def treatment_message_text(message_text, tokens):
                     elif future == task3_future:
                         cexfunded = result
                     elif future == task4_future:
-                        telegram_links, twitter_links, discord_links, other_websites, medium_links, triple_links, social_media_text = result
+                        telegram_links, twitter_links,discord_links, other_websites, medium_links, docs_links, app_links, moar_links,triple_links, social_media_text = result
                     elif future == task5_future:
                         number_lpremove, tx_lpremove = result
 
@@ -249,40 +294,44 @@ def treatment_message_text(message_text, tokens):
         except ValueError:
            print(f"Error: Unable to convert {pastcoins[3]} to an integer.")
 
+        #get the pair address if it exists
+        pair_address_pattern = r"(dexscreener\.com/ethereum/)(0x[a-fA-F0-9]{40})"
+        # Search for contract addresses directly attached to specific URLs
+        match_attached = re.search(pair_address_pattern, message_text)
+        if match_attached:
+            pair = match_attached.group(2)
+            print(f"Pair Address : {pair}")
+        # Extracting Uni version (Uni V2 or Uni V3)
+        uni_version_match = re.search(r'\*\*\s*Pair:\s*\*\* .*?(Uni V\d+)', message_text)
+        if uni_version_match:
+            uni_version = uni_version_match.group(1)
+            print("Uni Version:", uni_version)
+
         
-
-          # Remove everything below the _ character in the message text
-        if "___" in message_text:
-            message_text = re.sub(r"___.*", "", message_text, flags=re.DOTALL)
+        if "Supply" in message_text:
+            message_text = re.sub(r"\*\*\s*Supply:.*", "", message_text, flags=re.DOTALL)
         else:
-            message_text = re.sub(r"☎️.*", "", message_text, flags=re.DOTALL)
+            message_text = re.sub(r"☎️.*", "", message_text)
+    
+        message_text = re.sub(r"\*\*\s*Pair.*", "", message_text)
+        lines = message_text.splitlines()
+        filtered_lines = [line for line in lines if  line.strip() != ""]
+        
+        message_text = '\n'.join(filtered_lines)
 
-        # Define the regular expression pattern for the specified format
-        pattern = r"🔗 (\[TG\]\(.*?\)? 🤷‍♂️|\[TG\]\(.*?\)?|TG 🤷‍♂️)? \| (Web 🤷‍♂️|\[Web\]\(.*?\)? 🤷‍♂️|\[Web\]\(.*?\)?|Web)? \| (Twitter 🤷‍♂️|\[Twitter\]\(.*?\)? 🤷‍♂️|\[Twitter\]\(.*?\)?|Twitter)? \|"       
-        # Use the re.sub() function to remove all matches of the pattern from the text
-        message_text = re.sub(pattern, "", message_text, flags=re.IGNORECASE)
-
-        # Add an emoji before "CA:" and "Suplly"
+        # Add an emoji before "CA:"
         message_text = message_text.replace("**CA:**", "[✍️](emoji/5816736498883498308) **CA:**")
-        message_text = message_text.replace("**Supply:**", "[🛢](emoji/5814449390143671921) **Supply**")
+        #Add a chart link
+        if pair[0]:
+            message_text += f"\n[📈](emoji/5823476741384967483) [Screener](https://dexscreener.com/ethereum/{pair})"+"[▶️](emoji/5827885422235095225)"+f"[Dext](https://www.dextools.io/app/ether/pair-explorer/{pair})"
 
-        # Replace the "📊" emoji with another emoji, for example "🔍"
-        message_text = message_text.replace("📊", "[📈](emoji/5823476741384967483)")
-        message_text = message_text.replace("🔗" , "[🔗](emoji/5828154325842530820)")
-
-        # Remove the "| KibaSwap (https://indy.kibadex.com/...)" pattern
-        message_text = re.sub(r'\|\s*\[KibaSwap\]\(https://indy\.kibadex\.com/.*?\) 🔄', '', message_text)
-
-        # Remove the "| DexV (https://www.dexview.com/...)" pattern
-        message_text = re.sub(r'\|\s*\[DexV\]\(https://www\.dexview\.com/eth/.*?\)', '', message_text)
-        # Replace "|" with an emoji, for example "[▶️](emoji/5827976810549219414)"
-        message_text = message_text.replace("|", "[▶️](emoji/5827885422235095225)")
         ##############################################################
         
-        message_text += f"\n\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[▶️](emoji/5816812219156927426)  [📈](emoji/5823242158861193696) **Marketcap:**  `{mcap}`\n[▶️](emoji/5816812219156927426) [💧](emoji/5823394089034322747) **Liquidity:**  `{liquidity}`\n"
+        if mcap is not None:
+            message_text += f"\n\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[▶️](emoji/5816812219156927426)  [📈](emoji/5823242158861193696) **Marketcap:**  `{mcap}`\n[▶️](emoji/5816812219156927426) [💧](emoji/5823394089034322747) **Liquidity:**  `{liquidity}`\n"
 
         if social_media_text.strip(): 
-            message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n {social_media_text}"
+            message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)\n{social_media_text}"
         ##############################################################
 
         message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n"
@@ -356,9 +405,13 @@ async def main():
         async def my_event_handler(event):
             start = time.time()
             message = event.message
-            message_text = " \n[🔹](emoji/5816477795823392378)  [👀](emoji/5821304900977431720) [👀](emoji/5821085969314484627) [👀](emoji/5823641711078805707)  [🔹](emoji/5816477795823392378)  \n"+message.text
+            message_text = " \n[🔹](emoji/5816477795823392378)\n\u00A0\n"+message.text
             logger.info(f"message text: {message_text}")
             client.parse_mode = CustomMarkdown()
+
+            ##############################################################################################################
+            ##############################################################################################################
+            ##############################################################################################################
             #freshly deployed tokens #####################################################################################
             if "Deployed" in message_text: # and "🛑" not in message_text:
                 
@@ -374,6 +427,9 @@ async def main():
                     round_balance_eth = None
                     deployer_address = extract_deployer_address(message_text)
                     print(f"extracted from message deployer: {deployer_address}")
+                    pair, token_name, token_symbol, total_supply, decimals = extract_token_metadata(message_text)
+
+                    
                     if deployer_address is None:
                         deployer_address, balance_eth, deployer_age = ethsourcecode.get_deployer_details(contract_address, f"{ETHERSCAN_API_KEY3}", None, None)
                         if balance_eth is not None:
@@ -385,7 +441,6 @@ async def main():
                             round_balance_eth = float(round( balance_eth, 3))
 
                     deployer_name = ethsourcecode.get_address_nametag(deployer_address, proxy)
-                    #mcap, liquidity = ethsourcecode.get_marketcap(contract_address)
                     cexfunded = ethsourcecode.extract_nametags_and_addresses(deployer_address, proxy)
                     number_lpremove, tx_lpremove = ethsourcecode.detect_liquidity_removals(deployer_address, f"{ETHERSCAN_API_KEY3}", None, None)
                     
@@ -398,45 +453,32 @@ async def main():
                         contracts_deployed_count = pastcoins[2]
 
                     # get the social media urls organised from the source code
-                    telegram_links, twitter_links, discord_links, other_websites, medium_links, triple_links, social_media_text = ethsourcecode.get_socialmedia_filter(contract_address, f"{ETHERSCAN_API_KEY2}", None, None)
+                    telegram_links, twitter_links,discord_links, other_websites, medium_links, docs_links, app_links, moar_links,triple_links, social_media_text = ethsourcecode.get_socialmedia_filter(contract_address, f"{ETHERSCAN_API_KEY2}", None, None)
                     
 
                    
                     
-                      # Remove everything below the _ character in the message text
-                    if "___" in message_text:
-                        message_text = re.sub(r"___.*", "", message_text, flags=re.DOTALL)
+                    if "Supply" in message_text:
+                        message_text = re.sub(r"\*\*\s*Supply:.*", "", message_text, flags=re.DOTALL)
                     else:
-                        message_text = re.sub(r"☎️.*", "", message_text, flags=re.DOTALL)
-
-                    # Define the regular expression pattern for the specified format
-                    pattern = r"🔗 (\[TG\]\(.*?\)? 🤷‍♂️|\[TG\]\(.*?\)?|TG 🤷‍♂️)? \| (Web 🤷‍♂️|\[Web\]\(.*?\)? 🤷‍♂️|\[Web\]\(.*?\)?|Web)? \| (Twitter 🤷‍♂️|\[Twitter\]\(.*?\)? 🤷‍♂️|\[Twitter\]\(.*?\)?|Twitter)? \|"
+                        message_text = re.sub(r"☎️.*", "", message_text)
+                
+                    message_text = re.sub(r"\*\*\s*Pair.*", "", message_text)
+                    lines = message_text.splitlines()
+                    filtered_lines = [line for line in lines if  line.strip() != ""]
                     
-                    # Use the re.sub() function to remove all matches of the pattern from the text
-                    message_text = re.sub(pattern, "", message_text, flags=re.IGNORECASE)
+                    message_text = '\n'.join(filtered_lines)
 
                     # Add an emoji before "CA:" and "Suplly"
                     message_text = message_text.replace("**CA:**", "[✍️](emoji/5816736498883498308) **CA:**")
-                    message_text = message_text.replace("**Supply:**", "[🛢](emoji/5814449390143671921) **Supply**")
-
-                    # Replace the "📊" emoji with another emoji, for example "🔍"
-                    message_text = message_text.replace("📊", "[📈](emoji/5823476741384967483)")
-                    message_text = message_text.replace("🔗" , "[🔗](emoji/5828154325842530820)")
-
-                    # Remove the "| KibaSwap (https://indy.kibadex.com/...)" pattern
-                    message_text = re.sub(r'\|\s*\[KibaSwap\]\(https://indy\.kibadex\.com/.*?\) 🔄', '', message_text)
-
-                    # Remove the "| DexV (https://www.dexview.com/...)" pattern
-                    message_text = re.sub(r'\|\s*\[DexV\]\(https://www\.dexview\.com/eth/.*?\)', '', message_text)
-
-                    # Replace "|" with an emoji, for example "[▶️](emoji/5827976810549219414)"
-                    message_text = message_text.replace("|", "[▶️](emoji/5827885422235095225)")
-                    ##############################################################
+                    #Add a chart link
+                    if pair[0]:
+                        message_text += f"\n[📈](emoji/5823476741384967483) [Screener](https://dexscreener.com/ethereum/{pair})"+"[▶️](emoji/5827885422235095225)"+f"[Dext](https://www.dextools.io/app/ether/pair-explorer/{pair})"
                     
                     #message_text += f"---------------------------------\n** ⟹💲 Marketcap:**  `{mcap}`\n** ⟹💰 Liquidity:**  `{liquidity}`\n"
 
                     if social_media_text.strip(): 
-                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n       {social_media_text}"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n{social_media_text}"
                     ##############################################################
 
                     message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n"
@@ -446,7 +488,7 @@ async def main():
                     if len(cexfunded)>0 :
                         message_text += f"      [▶️](emoji/5816812219156927426) [🔹](emoji/5816477795823392378) **Cex:** `{cexfunded}`\n"
                     if balance_eth is not None:
-                        message_text += f"      [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n        [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n      [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
                     else:
                         message_text += f"      [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n      [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
 
@@ -482,6 +524,14 @@ async def main():
                     filter_ = {"_id": contract_address.lower()}
                     update_ = {
                         "$setOnInsert": {
+                            "token_name": token_name,
+                            "token_symbol": token_symbol,
+                            "pair": {
+                                "address": pair[0],
+                                "uniswap_version": pair[1]
+                            },
+                            "total_supply": total_supply,
+                            "decimals": decimals,
                             "deployer_address": deployer_address,
                             "deployer_age": deployer_age,
                             "deployer_balance": round_balance_eth,
@@ -516,6 +566,7 @@ async def main():
                 logger.info("Found a verified contract message")         
 
                 contract_address = caextractor.extract_contract_address(message_text)
+                pair, token_name, token_symbol, total_supply, decimals = extract_token_metadata(message_text)
                 hopanalysis = None
                 
                 if contract_address:
@@ -529,6 +580,7 @@ async def main():
                     token_data = tokens.find_one(query)
                     print(f"\n\nmongodb database tokendata {token_data}\n\n")
                     # If token_data is not None, access the pastcoin_data field
+                    
                     if token_data is not None:
                         pastcoins = token_data.get("pastcoin_data", "No pastcoin_data field found.")
                         deployer_address = token_data.get("deployer_address", None)
@@ -609,7 +661,7 @@ async def main():
                         deployer_name = None
                         mcap, liquidity = None, None
                         cexfunded = None
-                        telegram_links, twitter_links, discord_links, other_websites, medium_links, triple_links, social_media_text = None, None, None, None, None, None, None
+                        telegram_links, twitter_links,discord_links, other_websites, medium_links, docs_links, app_links, moar_links,triple_links, social_media_text = None, None, None, None, None, None, None, None, None, None
                         number_lpremove, tx_lpremove = None, None
                         # Wait for all tasks to complete
                         for future in concurrent.futures.as_completed([task1_future, task2_future, task3_future, task4_future, task5_future]):
@@ -625,7 +677,7 @@ async def main():
                                 elif future == task3_future:
                                     cexfunded = result
                                 elif future == task4_future:
-                                    telegram_links, twitter_links, discord_links, other_websites, medium_links, triple_links, social_media_text = result
+                                    telegram_links, twitter_links,discord_links, other_websites, medium_links, docs_links, app_links, moar_links,triple_links, social_media_text = result
                                 elif future == task5_future:
                                     number_lpremove, tx_lpremove = result
                                     print(f"numbe of lp removals: {number_lpremove}")
@@ -641,58 +693,49 @@ async def main():
                         contracts_deployed_count = pastcoins[2]
                     
 
-                    # Remove everything below the _ character in the message text
-                    if "___" in message_text:
-                        message_text = re.sub(r"___.*", "", message_text, flags=re.DOTALL)
+                    #traitement de texte, short clean message post
+                    if "Supply" in message_text:
+                        message_text = re.sub(r"\*\*\s*Supply:.*", "", message_text, flags=re.DOTALL)
                     else:
-                        message_text = re.sub(r"☎️.*", "", message_text, flags=re.DOTALL)
-
-                    # Define the regular expression pattern for the specified format
-                    pattern = r"🔗 (\[TG\]\(.*?\)? 🤷‍♂️|\[TG\]\(.*?\)?|TG 🤷‍♂️)? \| (Web 🤷‍♂️|\[Web\]\(.*?\)? 🤷‍♂️|\[Web\]\(.*?\)?|Web)? \| (Twitter 🤷‍♂️|\[Twitter\]\(.*?\)? 🤷‍♂️|\[Twitter\]\(.*?\)?|Twitter)? \|"
+                        message_text = re.sub(r"☎️.*", "", message_text)
+                
+                    message_text = re.sub(r"\*\*\s*Pair.*", "", message_text)
+                    lines = message_text.splitlines()
+                    filtered_lines = [line for line in lines if  line.strip() != ""]
                     
-                    # Use the re.sub() function to remove all matches of the pattern from the text
-                    message_text = re.sub(pattern, "", message_text, flags=re.IGNORECASE)
+                    message_text = '\n'.join(filtered_lines)
 
                     # Add an emoji before "CA:" and "Suplly"
                     message_text = message_text.replace("**CA:**", "[✍️](emoji/5816736498883498308) **CA:**")
-                    message_text = message_text.replace("**Supply:**", "[🛢](emoji/5814449390143671921) **Supply**")
+                    #Add a chart link
+                    if pair[0]:
+                        message_text += f"\n[📈](emoji/5823476741384967483) [Screener](https://dexscreener.com/ethereum/{pair}) [▶️](emoji/5827885422235095225) [Dext](https://www.dextools.io/app/ether/pair-explorer/{pair})"
 
-                    # Replace the "📊" emoji with another emoji, for example "🔍"
-                    message_text = message_text.replace("📊", "[📈](emoji/5823476741384967483)")
-                    message_text = message_text.replace("🔗" , "[🔗](emoji/5828154325842530820)")
 
-                    # Remove the "| KibaSwap (https://indy.kibadex.com/...)" pattern
-                    message_text = re.sub(r'\|\s*\[KibaSwap\]\(https://indy\.kibadex\.com/.*?\) 🔄', '', message_text)
-
-                    # Remove the "| DexV (https://www.dexview.com/...)" pattern
-                    message_text = re.sub(r'\|\s*\[DexV\]\(https://www\.dexview\.com/eth/.*?\)', '', message_text)
-                    # Replace "|" with an emoji, for example "[▶️](emoji/5827976810549219414)"
-                    message_text = message_text.replace("|", "[▶️](emoji/5827885422235095225)")
-
-                    
                     ##############################################################
                     
-                    message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [▶️](emoji/5816812219156927426) [📈](emoji/5823242158861193696) **Marketcap:**  `{mcap}`\n [▶️](emoji/5816812219156927426) [💧](emoji/5823394089034322747) **Liquidity:**  `{liquidity}`\n"
+                    if mcap is not None:
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [▶️](emoji/5816812219156927426) [📈](emoji/5823242158861193696) **Marketcap:**  `{mcap}`\n [▶️](emoji/5816812219156927426) [💧](emoji/5823394089034322747) **Liquidity:**  `{liquidity}`\n"
 
                     if social_media_text.strip(): 
-                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n       {social_media_text}"
+                        message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n [🌐](emoji/5821458708051267544) **SOCIAL LINKS** [🌐](emoji/5821458708051267544)  \n{social_media_text}"
                     ##############################################################
 
                     message_text +=f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n[🚀](emoji/5823193307903168922) **DEPLOYER DETAILS:** [🚀](emoji/5823193307903168922)\n"
                     if deployer_name is not None:
-                        message_text += f"  [▶️](emoji/5816812219156927426) **⚡️ Nametag:**  `{deployer_name}`\n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) **⚡️ Nametag:**  `{deployer_name}`\n"
                     
                     if len(cexfunded)>0 :
-                        message_text += f"  [▶️](emoji/5816812219156927426) [🔹](emoji/5816477795823392378) **Cex:** `{cexfunded}`\n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) [🔹](emoji/5816477795823392378) **Cex:** `{cexfunded}`\n"
 
                     if balance_eth is not None:
-                        message_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{round_balance_eth}` **ETH**\n      [▶️](emoji/5816812219156927426)  [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
                     else:
-                        message_text += f"  [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n  [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) [💰](emoji/5816636675253605227) **Balance:**  `{balance_eth}` **ETH**\n      [▶️](emoji/5816812219156927426) [🕰](emoji/5821312773652484635) **Age:**  `{deployer_age}` **days**\n"
 
                     if number_lpremove is not None and number_lpremove>0 :
                         result_lpremove = asynciohopanalysis.process_shorten_and_link_element(tx_lpremove)
-                        message_text += f"  [▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n    {result_lpremove} \n"
+                        message_text += f"      [▶️](emoji/5816812219156927426) ** 🛑 liq remove Txs** : `{number_lpremove}` \n       {result_lpremove} \n"
                     
                     if pastcoins[1] != 0:
                         message_text += f"\n[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)[▶️](emoji/5814397073147039609)\n **🤖 BEST PAST COIN** `(out of {contracts_deployed_count})`\n      [▶️](emoji/5816812219156927426)** Name:** `{past_name}` \n       [▶️](emoji/5816812219156927426)**  Symbol:** `{past_symbol}` \n      [▶️](emoji/5816812219156927426) [✍️](emoji/5816736498883498308) **Ca:** `{pastcoins[0]}` \n      [▶️](emoji/5816812219156927426)** 🎯 ATH mcap:** `{ethsourcecode.smart_format_number(pastcoins[1])}`"
@@ -718,11 +761,16 @@ async def main():
                     message_id = sent_message.id
                     timestamp_utc = sent_message.date
 
+                    extension = ethsourcecode.check_website_extension(other_websites)
                     # Define the filter and the update
                     
                     filter_ = {"_id": {"$regex": f"^{contract_address}$", "$options": 'i'}}
                     update_ = {
                         "$set": {
+                            "pair": {
+                                "address": pair[0],
+                                "uniswap_version": pair[1]
+                            },
                             "events.verified": {
                                 "timestamp": timestamp_utc,
                                 "message_id": message_id,
@@ -734,6 +782,10 @@ async def main():
                                 "websites": other_websites,
                                 "medium": medium_links,
                                 "discord": discord_links,
+                                "docs": docs_links,
+                                "apps": app_links,
+                                "moar": moar_links,
+                                "extension": extension,
                                 "triple": triple_links
                             }
 
@@ -753,7 +805,8 @@ async def main():
             #Burned Tokens ################################################################################
             if "burned" in message_text: # and "🛑" not in message_text:
                 logger.info("Found a verified contract message")
-                
+                pair, token_name, token_symbol, total_supply, decimals = extract_token_metadata(message_text)
+
                 message_text, contract_address = treatment_message_text(message_text, tokens)    
 
                 try:
@@ -773,6 +826,10 @@ async def main():
                 filter_ = {"_id": {"$regex": f"^{contract_address}$", "$options": 'i'}}
                 update_ = {
                     "$set": {
+                        "pair": {
+                                "address": pair[0],
+                                "uniswap_version": pair[1]
+                            },
                         "events.burned": {
                             "timestamp": timestamp_utc,
                             "message_id": message_id,
@@ -796,6 +853,8 @@ async def main():
                     logger.info("Found a Long Lock contract message")
                 
                     message_text, contract_address = treatment_message_text(message_text, tokens)
+                    pair, token_name, token_symbol, total_supply, decimals = extract_token_metadata(message_text)
+
 
                     try:
                         sent_message = await client.send_file(target_longlock, file = cached_media[2] , caption = message_text, parse_mode=CustomMarkdown(), link_preview=False)
@@ -814,6 +873,10 @@ async def main():
                     filter_ = {"_id": {"$regex": f"^{contract_address}$", "$options": 'i'}}
                     update_ = {
                         "$set": {
+                            "pair": {
+                                "address": pair[0],
+                                "uniswap_version": pair[1]
+                            },
                             "events.locked": {
                                 "timestamp": timestamp_utc,
                                 "message_id": message_id,
